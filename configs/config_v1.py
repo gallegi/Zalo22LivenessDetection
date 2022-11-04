@@ -3,7 +3,7 @@ class CFG:
 
     root_folder = './'
     run_folds = [0,1,2,3,4]
-    accelerator = 'gpu'
+    accelerator = 'mps'
     devices = 1
     comet_api_key = 'zR96oNVqYeTUXArmgZBc7J9Jp'
     comet_project_name = 'Zalo22Liveness'
@@ -22,7 +22,7 @@ class CFG:
     min_lr=1e-6
     eps=1e-6
     betas=(0.9, 0.999)
-    batch_size=16
+    batch_size=64
     weight_decay=0.01
     gradient_accumulation_steps=1
     max_grad_norm=1000
@@ -31,5 +31,7 @@ class CFG:
     patience = 10
 
 CFG.metadata_file = f'{CFG.root_folder}/data/train/label_per_frame_5folds.csv'
-CFG.video_dir = f'{CFG.root_folder}/data/train/videos'
-CFG.model_dir = f'{CFG.root_folder}/models/'
+CFG.train_video_dir = f'{CFG.root_folder}/data/train/videos'
+CFG.test_video_dir = f'{CFG.root_folder}/data/public/videos'
+CFG.model_dir = f'{CFG.root_folder}/models'
+CFG.submission_folder = f'{CFG.root_folder}/submissions'

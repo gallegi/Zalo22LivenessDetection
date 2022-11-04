@@ -9,13 +9,14 @@ from pytorch_lightning.loggers import CSVLogger, CometLogger
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks import ModelCheckpoint
 
-from configs.default_config import CFG
 from src.general import seed_torch
 from src.dataset import LivenessDataset, get_train_transforms, get_val_transforms
 from src.model import LivenessLit
 
 parser = argparse.ArgumentParser(description='Training arguments')
-parser.add_argument('--config', type=str, default='default_config',
+parser.add_argument('--config', type=str, default='config_v1',
+                    help='config file to run an experiment')
+parser.add_argument('--model_dir', type=str, default='./models',
                     help='config file to run an experiment')
 
 args = parser.parse_args()
@@ -23,10 +24,12 @@ args = parser.parse_args()
 config_module = importlib.import_module(f'configs.{args.config}')
 CFG = config_module.CFG
 
+CFG.model_dir = args.model_dir
+
 seed_torch(CFG.seed) # set initial seed
 
 CFG.output_dir_name = CFG.version_note + '_' + CFG.backbone.replace('/', '_') 
-CFG.output_dir = os.path.join(CFG.model_dir, CFG.output_dir_name)
+CFG.output_dir = os.path.join(args.model_dir, CFG.output_dir_name)
 
 df = pd.read_csv(CFG.metadata_file)
 
@@ -49,8 +52,8 @@ for valid_fold in CFG.run_folds:
     val_transforms = get_val_transforms(CFG)
 
     # Defining DataSet
-    train_dataset = LivenessDataset(CFG, train_df, train_transforms)
-    valid_dataset = LivenessDataset(CFG, valid_df, val_transforms)
+    train_dataset = LivenessDataset(CFG, train_df, CFG.train_video_dir, train_transforms)
+    valid_dataset = LivenessDataset(CFG, valid_df, CFG.train_video_dir, val_transforms)
 
     batch_size = CFG.batch_size
     train_loader = torch.utils.data.DataLoader(train_dataset,batch_size=batch_size, shuffle=True,
@@ -63,7 +66,7 @@ for valid_fold in CFG.run_folds:
     lit_module = LivenessLit(CFG)
 
     # logger = CSVLogger(CFG.output_dir, name=f'fold{valid_fold}')
-    logger = CometLogger(api_key=CFG.comet_api_key, project_name=CFG.comet_project_name, experiment_name=CFG.output_dir_name)
+    logger = CometLogger(api_key=CFG.comet_api_key, project_name=CFG.comet_project_name, experiment_name=CFG.output_dir_name + f'_fold{valid_fold}')
     lr_monitor = LearningRateMonitor(logging_interval='epoch')
     checkpointer = ModelCheckpoint(
          dirpath=os.path.join(CFG.output_dir, f'fold{valid_fold}'),

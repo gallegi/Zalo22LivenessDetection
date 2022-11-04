@@ -81,6 +81,7 @@ class LivenessLit(pl.LightningModule):
         }
 
     def step(self, X, y):
+        X = X.to(self.device)
         y = y.to(self.device)
         y_pred = self(X).view(-1)
         loss = self.criterion(y_pred, y)
@@ -98,6 +99,13 @@ class LivenessLit(pl.LightningModule):
         self.log('val_loss', loss)
         y_prob = y_pred.sigmoid()
         return {'loss': loss, 'preds':y_prob, 'labels':y}
+
+    def predict_step(self, test_batch, batch_idx):
+        X = test_batch[0]
+        X = X.to(self.device)
+        y_pred = self(X).view(-1)
+        y_prob = y_pred.sigmoid()
+        return y_prob
 
     def compute_metrics(self, outputs):
         all_preds = np.concatenate([out['preds'].detach().cpu().numpy() for out in outputs])
