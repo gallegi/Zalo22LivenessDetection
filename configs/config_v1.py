@@ -27,7 +27,7 @@ class CFG:
     gradient_accumulation_steps=1
     max_grad_norm=1000
     seed=67    
-    sample = 100
+    sample = None
     patience = 10
 
 CFG.metadata_file = f'{CFG.root_folder}/data/train/label_per_frame_5folds.csv'
