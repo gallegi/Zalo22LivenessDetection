@@ -66,10 +66,9 @@ class LivenessDataset(Dataset):
     def __getitem__(self, item):
         row = self.df.iloc[item]
         vid_name = row['fname']
-        vid_len = row['frame_count']
         vid_path = os.path.join(self.cfg.video_dir, vid_name)
         cap = cv2.VideoCapture(vid_path)
-        frame_no = np.random.randint(0, vid_len)
+        frame_no = row['frame_index']
         cap.set(1, frame_no)  # Where frame_no is the frame you want
         ret, im = cap.read()
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
