@@ -7,7 +7,7 @@ class CFG:
 
     root_folder = './'
     run_folds = [0,1,2,3,4]
-    accelerator = 'cuda'
+    accelerator = 'gpu'
     devices = 1
     comet_api_key = 'zR96oNVqYeTUXArmgZBc7J9Jp'
     comet_project_name = 'Zalo22Liveness'
