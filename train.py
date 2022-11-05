@@ -10,7 +10,7 @@ from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks import ModelCheckpoint
 
 from src.general import seed_torch
-from src.dataset import LivenessDataset, get_train_transforms, get_val_transforms
+from src.dataset import LivenessDataset
 from src.model import LivenessLit
 
 parser = argparse.ArgumentParser(description='Training arguments')
@@ -48,12 +48,9 @@ for valid_fold in CFG.run_folds:
 
     CFG.num_train_examples = len(train_df)
 
-    train_transforms = get_train_transforms(CFG)
-    val_transforms = get_val_transforms(CFG)
-
     # Defining DataSet
-    train_dataset = LivenessDataset(CFG, train_df, CFG.train_video_dir, train_transforms)
-    valid_dataset = LivenessDataset(CFG, valid_df, CFG.train_video_dir, val_transforms)
+    train_dataset = LivenessDataset(CFG, train_df, CFG.train_video_dir, CFG.train_transforms)
+    valid_dataset = LivenessDataset(CFG, valid_df, CFG.train_video_dir, CFG.val_transforms)
 
     batch_size = CFG.batch_size
     train_loader = torch.utils.data.DataLoader(train_dataset,batch_size=batch_size, shuffle=True,

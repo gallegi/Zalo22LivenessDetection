@@ -5,54 +5,6 @@ import cv2
 import numpy as np
 
 import numpy as np
-import albumentations as A 
-from albumentations.pytorch.transforms import ToTensorV2
-
-def get_train_transforms(cfg):
-    return A.Compose(
-        [
-            # A.ShiftScaleRotate(p=0.5),
-            # A.HorizontalFlip(p=0.5),
-            # A.VerticalFlip(p=0.5),
-            # A.Transpose(p=0.5),
-
-            # # pixel aug
-            # A.GaussNoise(p=0.2),
-            # A.OneOf([
-            #     A.MotionBlur(p=1),
-            #     A.MedianBlur(blur_limit=5, p=1),
-            #     A.Blur(blur_limit=5, p=1),
-            # ], p=0.3),
-            # A.OneOf([
-            #     A.CLAHE(p=1),
-            #     A.IAASharpen(p=1),
-            #     A.IAAEmboss(p=1),
-            #     A.RandomBrightnessContrast(p=1),
-            # ], p=0.25),
-            # A.HueSaturationValue(p=0.25),
-            # A.ToGray(p=0.25),
-         
-            A.Resize(height=cfg.im_size, width=cfg.im_size, always_apply=True),
-            # A.CoarseDropout(max_height=6, max_width=6, max_holes=3, p=0.2),
-            A.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-            ToTensorV2(always_apply=True),
-            
-        ],
-        p=1.0,
-        
-    )
-
-
-def get_val_transforms(cfg):
-    return A.Compose(
-        [
-            A.Resize(height=cfg.im_size, width=cfg.im_size, always_apply=True),
-            A.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-            ToTensorV2(always_apply=True),
-        ],
-        p=1.0,
-       
-    )
 
 class LivenessDataset(Dataset):
     def __init__(self, cfg, df, video_dir, transforms):

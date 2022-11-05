@@ -10,7 +10,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import CSVLogger, CometLogger
 
 from src.model import LivenessLit
-from src.dataset import LivenessDataset, get_val_transforms
+from src.dataset import LivenessDataset
 
 parser = argparse.ArgumentParser(description='Training arguments')
 parser.add_argument('--config', type=str, default='config_v1',
@@ -30,9 +30,10 @@ CFG.output_dir = os.path.join(CFG.model_dir, CFG.output_dir_name)
 
 CFG.submission_folder = args.submission_folder
 
+# Load model
 model = LivenessLit.load_from_checkpoint(args.weight, cfg=CFG)
 
-
+# Choose frames at each vid to infer
 fnames = os.listdir(CFG.test_video_dir)
 test_df = pd.DataFrame(fnames)
 test_df.columns = ['fname']
@@ -56,10 +57,7 @@ test_df = ind_df.merge(test_df, on=['fname'])
 # test_df = test_df[test_df.fname.isin(np.random.choice(test_df.fname.unique(), 10))]
 
 
-test_transforms = get_val_transforms(CFG)
-
-
-test_ds = LivenessDataset(CFG, test_df, CFG.test_video_dir, test_transforms)
+test_ds = LivenessDataset(CFG, test_df, CFG.test_video_dir, CFG.val_transforms)
 
 
 batch_size = CFG.batch_size
@@ -69,7 +67,7 @@ test_loader = torch.utils.data.DataLoader(test_ds,batch_size=batch_size,num_work
 
 # logger = CometLogger(api_key=CFG.comet_api_key, project_name=CFG.comet_project_name, experiment_name=CFG.output_dir_name + f'_fold{test_fold}')
 
-
+# Predict
 trainer = pl.Trainer(default_root_dir=CFG.output_dir,  
                     # logger=logger,
                     accelerator=CFG.accelerator, devices=CFG.devices)
