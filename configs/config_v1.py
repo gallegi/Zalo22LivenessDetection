@@ -34,7 +34,7 @@ class CFG:
     sample = 200
     patience = 10
 
-CFG.metadata_file = f'{CFG.root_folder}/data/train/label_per_frame_5folds.csv'
+CFG.metadata_file = f'{CFG.root_folder}/data/train/label_{CFG.frames_per_vid}_frame_5folds.csv'
 CFG.train_video_dir = f'{CFG.root_folder}/data/train/videos'
 CFG.test_video_dir = f'{CFG.root_folder}/data/public/videos'
 CFG.model_dir = f'{CFG.root_folder}/models'
