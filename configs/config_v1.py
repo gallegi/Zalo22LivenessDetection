@@ -15,7 +15,7 @@ class CFG:
     im_size = 224
 
     num_workers=0
-    backbone="tf_efficientnet_b0"
+    backbone="tf_efficientnet_b2_ns"
     gradient_checkpointing=False
     scheduler='cosine' # ['linear', 'cosine']
     batch_scheduler=True
