@@ -66,7 +66,7 @@ for train_indices, val_indices in kfold.split(valid_df, valid_df['liveness_score
 valid_df.groupby('fold').liveness_score.value_counts()
 
 
-valid_df.to_csv('data/train/label_5folds.csv', index=False)
+valid_df.to_csv('data/label_5folds.csv', index=False)
 
 
 vid_names = []
@@ -82,7 +82,7 @@ ind_df = pd.DataFrame({'fname': vid_names, 'frame_index': frame_indices})
 ind_df = ind_df.merge(valid_df, on=['fname'])
 
 
-ind_df.to_csv(f'data/train/label_{CFG.frames_per_vid}_frame_5folds.csv', index=False)
+ind_df.to_csv(f'data/label_{CFG.frames_per_vid}_frame_5folds.csv', index=False)
 
 
 len(ind_df)

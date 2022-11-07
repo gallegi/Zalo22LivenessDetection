@@ -26,7 +26,7 @@ class CFG:
     min_lr=1e-6
     eps=1e-6
     betas=(0.9, 0.999)
-    batch_size=128
+    batch_size=64
     weight_decay=0.01
     # gradient_accumulation_steps=1
     # max_grad_norm=1000
@@ -34,7 +34,7 @@ class CFG:
     sample = None
     # patience = 10
 
-CFG.metadata_file = f'{CFG.root_folder}/data/train/label_{CFG.frames_per_vid}_frame_5folds.csv'
+CFG.metadata_file = f'{CFG.root_folder}/data/label_{CFG.frames_per_vid}_frame_5folds.csv'
 CFG.train_video_dir = f'{CFG.root_folder}/data/train/videos'
 CFG.test_video_dir = f'{CFG.root_folder}/data/public/videos'
 CFG.model_dir = f'{CFG.root_folder}/models'
