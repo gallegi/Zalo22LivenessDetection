@@ -11,7 +11,7 @@ class CFG:
     devices = 1
     comet_api_key = 'zR96oNVqYeTUXArmgZBc7J9Jp'
     comet_project_name = 'Zalo22Liveness'
-    frames_per_vid = 10
+    frames_per_vid = 3
     im_size = 224
 
     num_workers=0
