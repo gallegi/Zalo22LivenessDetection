@@ -9,7 +9,7 @@ class CFG:
     run_folds = [0,1,2,3,4]
     accelerator = 'gpu'
     devices = 1
-    comet_api_key = 'zR96oNVqYeTUXArmgZBc7J9Jp'
+    comet_api_key = 'zR96oNVqYeTUXArmgZBc7J9Jp' # change to your key
     comet_project_name = 'Zalo22Liveness'
     frames_per_vid = 3
     im_size = 224
