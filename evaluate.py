@@ -73,7 +73,7 @@ y = val_df_grouped['liveness_score']
 y_pred = val_df_grouped['prob']
 
 os.makedirs(CFG.valid_pred_folder, exist_ok=True)
-val_df_grouped.to_csv(os.path.join(CFG.valid_pred_folder, CFG.version_note + '_valid.csv'), index=False)
+val_df_grouped.to_csv(os.path.join(CFG.valid_pred_folder, CFG.output_dir_name +  f'_valid_fold{args.fold}' + '.csv'), index=False)
 
 # Compute EER
 fpr, tpr, threshold = roc_curve(y, y_pred, pos_label=1)

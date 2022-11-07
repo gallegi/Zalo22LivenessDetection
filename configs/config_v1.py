@@ -15,12 +15,12 @@ class CFG:
     im_size = 224
 
     num_workers=0
-    backbone="tf_efficientnet_b2_ns"
+    backbone="tf_efficientnet_b0_ns"
     gradient_checkpointing=False
     scheduler='cosine' # ['linear', 'cosine']
     batch_scheduler=True
-    num_cycles=0.5
-    num_warmup_steps=0
+    # num_cycles=0.5
+    # num_warmup_steps=0
     epochs=10
     init_lr=1e-4
     min_lr=1e-6
@@ -28,11 +28,11 @@ class CFG:
     betas=(0.9, 0.999)
     batch_size=128
     weight_decay=0.01
-    gradient_accumulation_steps=1
-    max_grad_norm=1000
+    # gradient_accumulation_steps=1
+    # max_grad_norm=1000
     seed=67    
     sample = None
-    patience = 10
+    # patience = 10
 
 CFG.metadata_file = f'{CFG.root_folder}/data/train/label_{CFG.frames_per_vid}_frame_5folds.csv'
 CFG.train_video_dir = f'{CFG.root_folder}/data/train/videos'

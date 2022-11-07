@@ -41,7 +41,7 @@ test_df.columns = ['fname']
 vid_names = []
 frame_indices = []
 for i, row in test_df.iterrows():
-    np.random.seed(CFG.seed)
+    # np.random.seed(CFG.seed)
     vid_path = os.path.join(CFG.test_video_dir, row['fname'])
     cap = cv2.VideoCapture(vid_path)
 
@@ -91,4 +91,4 @@ sub = test_df_grouped[['fname', 'prob']]
 sub.columns = ['fname', 'liveness_score']
 
 os.makedirs(CFG.submission_folder, exist_ok=True)
-sub.to_csv(os.path.join(CFG.submission_folder, CFG.version_note + '.csv'), index=False)
+sub.to_csv(os.path.join(CFG.submission_folder, CFG.output_dir_name + '.csv'), index=False)
