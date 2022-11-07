@@ -22,10 +22,10 @@ Then when training you will be able to see experiment log in your Comet-ml Dashb
 ### b. Prepare the data
 - Unzip Liveness Detection data (train.zip and public_test.zip) inside data/ folder
 - The structure should look like this
------- data
----------|-- train
----------------|-- videos
----------------|-- label.csv
+  - ----- data
+  - --------|-- train
+  - --------------|-- videos
+  - --------------|-- label.csv
 ## 3.1. Train:
 ````
     python train.py
