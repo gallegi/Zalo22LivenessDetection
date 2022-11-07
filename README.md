@@ -6,7 +6,7 @@
   - Timm
   - Comet-ml
 
-## 2. Overview
+# 2. Overview
 - The project is built upon Pytorch Lightning for training code organization, and Commet ML for expermiment tracking.
 ![comet ml log](/pictures/comet_log.png "Comet API key")
 
