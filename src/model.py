@@ -10,30 +10,6 @@ from sklearn.metrics import accuracy_score
 import timm
 import pytorch_lightning as pl
 
-# def get_optimizer_params(model, encoder_lr, decoder_lr, weight_decay=0.0):
-#     no_decay = ["bias", "LayerNorm.bias", "LayerNorm.weight"]
-#     optimizer_parameters = [
-#         {'params': [p for n, p in model.model.named_parameters() if not any(nd in n for nd in no_decay)],
-#          'lr': encoder_lr, 'weight_decay': weight_decay},
-#         {'params': [p for n, p in model.model.named_parameters() if any(nd in n for nd in no_decay)],
-#          'lr': encoder_lr, 'weight_decay': 0.0},
-#         {'params': [p for n, p in model.named_parameters() if "model" not in n],
-#          'lr': decoder_lr, 'weight_decay': 0.0}
-#     ]
-#     return optimizer_parameters
-
-    
-# def get_scheduler(cfg, optimizer, num_train_steps):
-#     if cfg.scheduler == 'linear':
-#         scheduler = get_linear_schedule_with_warmup(
-#             optimizer, num_warmup_steps=cfg.num_warmup_steps, num_training_steps=num_train_steps
-#         )
-#     elif cfg.scheduler == 'cosine':
-#         scheduler = get_cosine_schedule_with_warmup(
-#             optimizer, num_warmup_steps=cfg.num_warmup_steps, num_training_steps=num_train_steps, num_cycles=cfg.num_cycles
-#         )
-#     return scheduler
-    
 class LivenessLit(pl.LightningModule):
     def __init__(self, cfg):
         super().__init__()
@@ -44,6 +20,9 @@ class LivenessLit(pl.LightningModule):
         if 'nfnet' in self.cfg.backbone:
             clf_in_feature = self.backbone.head.fc.in_features
             self.backbone.head.fc = nn.Linear(clf_in_feature, 1)
+        if 'swin' in self.cfg.backbone:
+            clf_in_feature = self.backbone.head.in_features
+            self.backbone.head = nn.Linear(clf_in_feature, 1)
         elif 'resnet' in self.cfg.backbone:
             clf_in_feature = self.backbone.fc.in_features
             self.backbone.fc = nn.Linear(clf_in_feature, 1)
@@ -58,15 +37,11 @@ class LivenessLit(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        # optimizer_parameters = get_optimizer_params(self,
-        #                                 encoder_lr=self.cfg.encoder_lr, 
-        #                                 decoder_lr=self.cfg.decoder_lr,
-        #                                 weight_decay=self.cfg.weight_decay)
+        
         optimizer = AdamW(self.backbone.parameters(), lr=self.cfg.init_lr, eps=self.cfg.eps, betas=self.cfg.betas)
         num_train_steps = int(self.cfg.num_train_examples / self.cfg.batch_size * self.cfg.epochs)
 
         #Defining LR SCheduler
-        # lr_scheduler = get_scheduler(self.cfg, optimizer, num_train_steps)
         lr_scheduler = CosineAnnealingLR(optimizer, T_max=num_train_steps, eta_min=self.cfg.min_lr)
 
         return {
