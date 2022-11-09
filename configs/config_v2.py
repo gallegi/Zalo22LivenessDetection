@@ -12,10 +12,10 @@ class CFG:
     comet_api_key = 'zR96oNVqYeTUXArmgZBc7J9Jp' # change to your key
     comet_project_name = 'Zalo22Liveness'
     frames_per_vid = 3
-    im_size = 192
+    im_size = 224
 
     num_workers=0
-    backbone="swinv2_base_window12_192_22k"
+    backbone="tf_efficientnet_b3_ns"
     gradient_checkpointing=False
     scheduler='cosine' # ['linear', 'cosine']
     batch_scheduler=True
