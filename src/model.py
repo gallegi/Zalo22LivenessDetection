@@ -20,7 +20,7 @@ class LivenessLit(pl.LightningModule):
         if 'nfnet' in self.cfg.backbone:
             clf_in_feature = self.backbone.head.fc.in_features
             self.backbone.head.fc = nn.Linear(clf_in_feature, 1)
-        if 'swin' in self.cfg.backbone:
+        elif 'swin' in self.cfg.backbone:
             clf_in_feature = self.backbone.head.in_features
             self.backbone.head = nn.Linear(clf_in_feature, 1)
         elif 'resnet' in self.cfg.backbone:
