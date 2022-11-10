@@ -5,7 +5,7 @@ from torch.nn import functional as F
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, roc_auc_score
 
 import timm
 import pytorch_lightning as pl
@@ -83,17 +83,20 @@ class LivenessLit(pl.LightningModule):
         return y_prob
 
     def compute_metrics(self, outputs):
-        all_preds = np.concatenate([out['preds'].detach().cpu().numpy() for out in outputs])
+        all_probas = np.concatenate([out['preds'].detach().cpu().numpy() for out in outputs])
         all_labels = np.concatenate([out['labels'].detach().cpu().numpy() for out in outputs])
-        all_preds = (all_preds > 0.5).astype(int)
+        all_preds = (all_probas > 0.5).astype(int)
         acc = float(accuracy_score(y_true=all_labels, y_pred=all_preds))
-        return acc
+        auc = float(roc_auc_score(y_true=all_labels, y_score=all_probas))
+        return acc, auc
 
     def training_epoch_end(self, training_step_outputs):
-        train_acc = self.compute_metrics(training_step_outputs)
+        train_acc, train_auc = self.compute_metrics(training_step_outputs)
         self.log('train_acc', train_acc)
+        self.log('train_AUC', train_auc)
         
     def validation_epoch_end(self, validation_step_outputs):
-        val_acc = self.compute_metrics(validation_step_outputs)
+        val_acc, val_auc = self.compute_metrics(validation_step_outputs)
         self.log('val_acc', val_acc)
+        self.log('val_AUC', val_auc)
         

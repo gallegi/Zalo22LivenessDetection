@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
 import numpy as np
 
-from configs.config_v1 import CFG
+from configs.config_v3 import CFG
 
 
 df = pd.read_csv('data/train/label.csv')
@@ -72,7 +72,7 @@ valid_df.to_csv('data/label_5folds.csv', index=False)
 vid_names = []
 frame_indices = []
 for i, row in valid_df.iterrows():
-    indices = np.random.choice(range(row['frame_count']), CFG.frames_per_vid, replace=False)
+    indices = np.arange(0, row['frame_count'], CFG.frame_sampling_rate)
     for ind in indices:
         vid_names.append(row['fname'])
         frame_indices.append(ind)
@@ -82,7 +82,7 @@ ind_df = pd.DataFrame({'fname': vid_names, 'frame_index': frame_indices})
 ind_df = ind_df.merge(valid_df, on=['fname'])
 
 
-ind_df.to_csv(f'data/label_{CFG.frames_per_vid}_frame_5folds.csv', index=False)
+ind_df.to_csv(f'data/label_sr{CFG.frame_sampling_rate}_frame_5folds.csv', index=False)
 
 
 len(ind_df)
