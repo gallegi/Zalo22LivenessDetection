@@ -31,7 +31,7 @@ class CFG:
     # gradient_accumulation_steps=1
     # max_grad_norm=1000
     seed=67    
-    sample = 100
+    sample = None
     # patience = 10
 
 CFG.metadata_file = f'{CFG.root_folder}/data/label_sr{CFG.frame_sampling_rate}_frame_5folds.csv'
