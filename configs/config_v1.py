@@ -6,7 +6,7 @@ class CFG:
     version_note = 'test'
 
     root_folder = './'
-    run_folds = [0,1,2,3,4]
+    run_folds = [0] #[0,1,2,3,4]
     device = 'cuda:0'
     comet_api_key = 'zR96oNVqYeTUXArmgZBc7J9Jp' # change to your key
     comet_project_name = 'Zalo22Liveness'
