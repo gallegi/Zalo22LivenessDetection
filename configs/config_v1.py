@@ -7,7 +7,7 @@ class CFG:
 
     root_folder = './'
     run_folds = [0,1,2,3,4]
-    device = 'mps'
+    device = 'cuda:0'
     comet_api_key = 'zR96oNVqYeTUXArmgZBc7J9Jp' # change to your key
     comet_project_name = 'Zalo22Liveness'
     frames_per_vid = 3
@@ -24,11 +24,11 @@ class CFG:
     min_lr=1e-6
     eps=1e-6
     betas=(0.9, 0.999)
-    batch_size=32
+    batch_size=64
     weight_decay=0.01
     warmup_factor = 10
     seed=67    
-    sample = 100
+    sample = None
     patience = 10
 
 CFG.metadata_file = f'{CFG.root_folder}/data/label_{CFG.frames_per_vid}_frame_5folds.csv'
