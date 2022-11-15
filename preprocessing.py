@@ -4,6 +4,7 @@ import cv2
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
 import numpy as np
+from sklearn.model_selection import StratifiedKFold
 
 from configs.config_v1 import CFG
 
@@ -51,9 +52,6 @@ plt.show()
 valid_df[valid_df.frame_count < 100].liveness_score.value_counts()
 
 
-from sklearn.model_selection import StratifiedKFold
-
-
 kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=CFG.seed)
 
 
@@ -72,7 +70,7 @@ valid_df.to_csv('data/label_5folds.csv', index=False)
 vid_names = []
 frame_indices = []
 for i, row in valid_df.iterrows():
-    indices = np.random.choice(range(row['frame_count']), CFG.frames_per_vid, replace=False)
+    indices = np.arange(0, row['frame_count'], CFG.frame_sampling_rate)
     for ind in indices:
         vid_names.append(row['fname'])
         frame_indices.append(ind)
@@ -82,12 +80,5 @@ ind_df = pd.DataFrame({'fname': vid_names, 'frame_index': frame_indices})
 ind_df = ind_df.merge(valid_df, on=['fname'])
 
 
-ind_df.to_csv(f'data/label_{CFG.frames_per_vid}_frame_5folds.csv', index=False)
-
-
-len(ind_df)
-
-
-
-
+ind_df.to_csv(f'data/label_sr{CFG.frame_sampling_rate}_frame_5folds.csv', index=False)
 
