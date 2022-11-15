@@ -1,8 +1,4 @@
 import os
-import json
-from re import T
-
-from .model import Model
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
@@ -12,7 +8,6 @@ import comet_ml
 
 # from .logger import Logger
 from .checkpointer import Checkpointer
-from .logger import Logger
 from .general import seed_everything, AverageMeter
 
 def str_to_class(class_name):

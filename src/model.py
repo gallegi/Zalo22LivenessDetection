@@ -1,15 +1,10 @@
 import numpy as np
-import torch
 from torch import nn
-from torch.nn import functional as F
 from sklearn.metrics import accuracy_score
 
 import timm
-from tqdm import tqdm
 import numpy as np
-import torch
 from torch import nn
-import gc
 from sklearn.metrics import roc_auc_score, accuracy_score
 
 import timm
