@@ -42,6 +42,7 @@ class CFG:
 
 CFG.metadata_file = f'{CFG.root_folder}/data/label_sr{CFG.frame_sampling_rate}_frame_5folds.csv'
 CFG.train_video_dir = f'{CFG.root_folder}/data/train/videos'
+CFG.train_image_dir = f'{CFG.root_folder}/data/train_frames/'
 CFG.test_video_dir = f'{CFG.root_folder}/data/public/videos'
 CFG.model_dir = f'{CFG.root_folder}/models'
 CFG.valid_pred_folder = f'{CFG.root_folder}/valid_predictions'
