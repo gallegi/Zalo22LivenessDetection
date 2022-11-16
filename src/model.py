@@ -7,29 +7,11 @@ import numpy as np
 from torch import nn
 from sklearn.metrics import roc_auc_score, accuracy_score
 
-import timm
-from torch import nn
-from abc import abstractmethod, ABC
+from .base_model import BaseModel
 
-class Model(nn.Module, ABC):
-    @abstractmethod
-    def training_step():
-        raise NotImplementedError()
-
-    @abstractmethod
-    def validation_step():
-        raise NotImplementedError()
-
-    def training_epoch_end(self):
-        return dict()
-
-    def validation_epoch_end(self):
-        return dict()
-        
-
-class LivenessModel(Model):
+class LivenessModel(BaseModel):
     def __init__(self, backbone_name, backbone_pretrained, n_classes=1, device='cpu'):
-        super(Model, self).__init__()
+        super(BaseModel, self).__init__()
         self.backbone = timm.create_model(backbone_name, pretrained=backbone_pretrained)
         
         if 'nfnet' in backbone_name:
