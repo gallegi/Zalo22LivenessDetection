@@ -6,11 +6,8 @@ import cv2
 import pandas as pd
 import numpy as np
 from tqdm.auto import tqdm
-import matplotlib.pyplot as plt
-import pytorch_lightning as pl
-from pytorch_lightning.loggers import CSVLogger, CometLogger
 
-from src.model import LivenessLit, LivenessModel
+from src.model import LivenessModel
 from src.dataset import LivenessDataset
 
 parser = argparse.ArgumentParser(description='Training arguments')
@@ -39,9 +36,12 @@ CFG.test_video_dir = args.test_video_dir
 test_dir_name = CFG.test_video_dir.split('/')[-2]
 print('Predict on:', test_dir_name)
 
+if not torch.cuda.is_available():
+    CFG.device = 'cpu'
+
 # Load model
 model = LivenessModel(CFG.backbone, backbone_pretrained=False)
-model.load_state_dict(torch.load(args.weight, map_location='cpu'))
+model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'])
 model.to(CFG.device)
 
 # Choose frames at each vid to infer
@@ -57,7 +57,7 @@ for i, row in test_df.iterrows():
     cap = cv2.VideoCapture(vid_path)
 
     frame_counts = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    indices = np.random.choice(range(frame_counts), CFG.frames_per_vid)
+    indices = np.arange(0, frame_counts, CFG.frame_sampling_rate)
     for ind in indices:
         vid_names.append(row['fname'])
         frame_indices.append(ind)

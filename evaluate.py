@@ -8,10 +8,8 @@ import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
 import numpy as np
 from sklearn.metrics import roc_curve
-import pytorch_lightning as pl
-from pytorch_lightning.loggers import CSVLogger, CometLogger
 
-from src.model import LivenessLit, LivenessModel
+from src.model import  LivenessModel
 from src.dataset import LivenessDataset
 
 parser = argparse.ArgumentParser(description='Training arguments')
@@ -30,9 +28,12 @@ CFG = config_module.CFG
 CFG.output_dir_name = CFG.version_note + '_' + CFG.backbone.replace('/', '_') 
 CFG.output_dir = os.path.join(CFG.model_dir, CFG.output_dir_name)
 
+if not torch.cuda.is_available():
+    CFG.device = 'cpu'
+
 # Load model and data
 model = LivenessModel(CFG.backbone, backbone_pretrained=False)
-model.load_state_dict(torch.load(args.weight, map_location='cpu'))
+model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'])
 model.to(CFG.device)
 
 df = pd.read_csv(CFG.metadata_file)
@@ -86,8 +87,6 @@ plt.show()
 eer = fpr[np.nanargmin(np.absolute((fnr - fpr)))]
 print('Threshold at the intersection of FRR and FAR:', eer_threshold)
 print(f'Equal Error Rate (EER) on valid fold {args.fold}:', eer)
-
-
 
 
 
