@@ -51,15 +51,16 @@ plt.show()
 vid_names = []
 frame_indices = []
 for i, row in valid_df.iterrows():
-    indices = np.arange(0, row['frame_count'], CFG.frame_sampling_rate)
-    for ind in indices:
-        vid_names.append(row['fname'])
-        frame_indices.append(ind)
-
+    # indices = np.arange(0, row['frame_count'], CFG.frame_sampling_rate)
+    stride = row['frame_count'] // CFG.frames_per_vid
+    for ind in range(row['frame_count']):
+        if ind % stride == 0:
+            vid_names.append(row['fname'])
+            frame_indices.append(ind)
 
 ind_df = pd.DataFrame({'fname': vid_names, 'frame_index': frame_indices})
 ind_df = ind_df.merge(valid_df, on=['fname'])
 
 
-ind_df.to_csv(f'data/label_sr{CFG.frame_sampling_rate}_frame_10folds.csv', index=False)
+ind_df.to_csv(f'data/label_{CFG.frames_per_vid}frames_10folds.csv', index=False)
 

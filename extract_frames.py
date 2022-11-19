@@ -9,7 +9,8 @@ from sklearn.model_selection import StratifiedKFold
 from configs.config_v1 import CFG
 
 
-df = pd.read_csv('data/train/label.csv')
+df = pd.read_csv('data/identified_metadata.csv')
+df = df[df.set=='train']
 
 FOLDER = 'data/train/videos'
 OUT_DIR = 'data/train_frames'
@@ -26,13 +27,16 @@ for fname in tqdm(df.fname.tolist()):
     length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     if length == 0:
         print('vid', vid_name, 'corrupts')
-    
+
+    stride = length // CFG.frames_per_vid
+
     frame_index = 0
     while cap.isOpened():
         ret, frame = cap.read()
         if ret:
-            outpath = os.path.join(OUT_DIR, f'{vid_name}_{frame_index:03d}.jpg')
-            cv2.imwrite(outpath, frame)
+            if frame_index % stride == 0:
+                outpath = os.path.join(OUT_DIR, f'{vid_name}_{frame_index:03d}.jpg')
+                cv2.imwrite(outpath, frame)
             frame_index += 1
         else:
             break

@@ -10,7 +10,7 @@ class CFG:
     device = 'cuda:0'
     comet_api_key = 'zR96oNVqYeTUXArmgZBc7J9Jp' # change to your key
     comet_project_name = 'Zalo22Liveness2'
-    frame_sampling_rate = 20
+    frames_per_vid = 10
     im_size = 224
 
     num_workers=2
@@ -40,8 +40,9 @@ class CFG:
     sample = None
     patience = 10
 
-CFG.metadata_file = f'{CFG.root_folder}/data/label_sr{CFG.frame_sampling_rate}_frame_10folds.csv'
+CFG.metadata_file = f'{CFG.root_folder}/data/label_{CFG.frames_per_vid}frames_10folds.csv'
 CFG.train_video_dir = f'{CFG.root_folder}/data/train/videos'
+CFG.train_image_dir = f'{CFG.root_folder}/data/train_frames'
 CFG.test_video_dir = f'{CFG.root_folder}/data/public/videos'
 CFG.model_dir = f'{CFG.root_folder}/models'
 CFG.valid_pred_folder = f'{CFG.root_folder}/valid_predictions'
