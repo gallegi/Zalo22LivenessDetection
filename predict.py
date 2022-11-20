@@ -49,21 +49,21 @@ fnames = os.listdir(CFG.test_video_dir)
 test_df = pd.DataFrame(fnames)
 test_df.columns = ['fname']
 
-vid_names = []
-frame_indices = []
-for i, row in test_df.iterrows():
-    # np.random.seed(CFG.seed)
-    vid_path = os.path.join(CFG.test_video_dir, row['fname'])
-    cap = cv2.VideoCapture(vid_path)
+# vid_names = []
+# frame_indices = []
+# for i, row in test_df.iterrows():
+#     # np.random.seed(CFG.seed)
+#     vid_path = os.path.join(CFG.test_video_dir, row['fname'])
+#     cap = cv2.VideoCapture(vid_path)
 
-    frame_counts = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    indices = np.arange(0, frame_counts, CFG.frame_sampling_rate)
-    for ind in indices:
-        vid_names.append(row['fname'])
-        frame_indices.append(ind)
+#     frame_counts = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+#     indices = np.arange(0, frame_counts, CFG.frame_sampling_rate)
+#     for ind in indices:
+#         vid_names.append(row['fname'])
+#         frame_indices.append(ind)
 
-ind_df = pd.DataFrame({'fname': vid_names, 'frame_index': frame_indices})
-test_df = ind_df.merge(test_df, on=['fname'])
+# ind_df = pd.DataFrame({'fname': vid_names, 'frame_index': frame_indices})
+# test_df = ind_df.merge(test_df, on=['fname'])
 
 test_ds = LivenessDataset(CFG, test_df, CFG.test_video_dir, CFG.val_transforms)
 

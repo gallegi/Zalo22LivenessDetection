@@ -37,6 +37,8 @@ model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'])
 model.to(CFG.device)
 
 df = pd.read_csv(CFG.metadata_file)
+df = df[df.set == 'train']
+
 if CFG.sample is not None:
     df = df.sample(CFG.sample).reset_index(drop=True)
 

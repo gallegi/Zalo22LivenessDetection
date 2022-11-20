@@ -14,7 +14,10 @@ class LivenessModel(BaseModel):
         super(BaseModel, self).__init__()
         self.backbone = timm.create_model(backbone_name, pretrained=backbone_pretrained)
         
-        if 'nfnet' in backbone_name:
+        if 'swin' in backbone_name:
+            clf_in_feature = self.backbone.head.in_features
+            self.backbone.head = nn.Linear(clf_in_feature, n_classes)
+        elif 'nfnet' in backbone_name:
             clf_in_feature = self.backbone.head.fc.in_features
             self.backbone.head.fc = nn.Linear(clf_in_feature, n_classes)
         elif 'resnet' in backbone_name:
