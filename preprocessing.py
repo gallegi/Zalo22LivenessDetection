@@ -4,12 +4,13 @@ import cv2
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
 import numpy as np
+from sklearn.model_selection import StratifiedKFold
 
 from configs.config_v1 import CFG
 
 
-df = pd.read_csv('data/train/label.csv')
-
+df = pd.read_csv('data/identified_metadata.csv')
+df = df[df.set=='train']
 
 print('Number of videos', len(df))
 
@@ -47,32 +48,10 @@ plt.title('Frame count distribution')
 plt.show()
 
 
-# The less frame a vid has, the more likely it is to be real
-valid_df[valid_df.frame_count < 100].liveness_score.value_counts()
-
-
-from sklearn.model_selection import StratifiedKFold
-
-
-kfold = StratifiedKFold(n_splits=5, shuffle=True, random_state=CFG.seed)
-
-
-fold = 0
-for train_indices, val_indices in kfold.split(valid_df, valid_df['liveness_score'], valid_df['frame_count']):
-    valid_df.loc[val_indices, 'fold'] = fold
-    fold+=1
-
-
-valid_df.groupby('fold').liveness_score.value_counts()
-
-
-valid_df.to_csv('data/label_5folds.csv', index=False)
-
-
 vid_names = []
 frame_indices = []
 for i, row in valid_df.iterrows():
-    indices = np.random.choice(range(row['frame_count']), CFG.frames_per_vid, replace=False)
+    indices = np.arange(0, row['frame_count'], CFG.frame_sampling_rate)
     for ind in indices:
         vid_names.append(row['fname'])
         frame_indices.append(ind)
@@ -82,12 +61,5 @@ ind_df = pd.DataFrame({'fname': vid_names, 'frame_index': frame_indices})
 ind_df = ind_df.merge(valid_df, on=['fname'])
 
 
-ind_df.to_csv(f'data/label_{CFG.frames_per_vid}_frame_5folds.csv', index=False)
-
-
-len(ind_df)
-
-
-
-
+ind_df.to_csv(f'data/label_sr{CFG.frame_sampling_rate}_frame_10folds.csv', index=False)
 

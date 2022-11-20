@@ -5,12 +5,11 @@ import torch
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm.auto import tqdm
 import numpy as np
 from sklearn.metrics import roc_curve
-import pytorch_lightning as pl
-from pytorch_lightning.loggers import CSVLogger, CometLogger
 
-from src.model import LivenessLit
+from src.model import  LivenessModel
 from src.dataset import LivenessDataset
 
 parser = argparse.ArgumentParser(description='Training arguments')
@@ -29,11 +28,17 @@ CFG = config_module.CFG
 CFG.output_dir_name = CFG.version_note + '_' + CFG.backbone.replace('/', '_') 
 CFG.output_dir = os.path.join(CFG.model_dir, CFG.output_dir_name)
 
+if not torch.cuda.is_available():
+    CFG.device = 'cpu'
+
 # Load model and data
-model = LivenessLit.load_from_checkpoint(args.weight, cfg=CFG)
+model = LivenessModel(CFG.backbone, backbone_pretrained=False)
+model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'])
+model.to(CFG.device)
 
 df = pd.read_csv(CFG.metadata_file)
-
+if CFG.sample is not None:
+    df = df.sample(CFG.sample).reset_index(drop=True)
 
 train_df = df[df.fold != args.fold]
 val_df = df[df.fold == args.fold]
@@ -47,23 +52,15 @@ batch_size = CFG.batch_size
 valid_loader = torch.utils.data.DataLoader(val_ds,batch_size=batch_size,num_workers=CFG.num_workers,
                                             shuffle=False,pin_memory=True,drop_last=False)
 
-
-# logger = CometLogger(api_key=CFG.comet_api_key, project_name=CFG.comet_project_name, experiment_name=CFG.output_dir_name + f'_fold{valid_fold}')
-
 # Predict
-trainer = pl.Trainer(default_root_dir=CFG.output_dir,  
-                    # logger=logger,
-                    accelerator=CFG.accelerator, devices=CFG.devices)
+val_preds = []
+for X,y in tqdm(valid_loader, total=len(valid_loader)):
+    with torch.no_grad():
+        y_prob = model(X).sigmoid().view(-1).cpu().numpy()
+        val_preds.append(y_prob)
+val_preds = np.concatenate(val_preds)
 
-
-val_preds = trainer.predict(model, dataloaders=valid_loader)
-
-
-val_preds = torch.cat(val_preds)
-
-
-val_preds = val_preds.cpu().numpy()
-
+# print(val_preds.shape)
 
 val_df.loc[:, 'prob'] = val_preds
 
@@ -90,8 +87,6 @@ plt.show()
 eer = fpr[np.nanargmin(np.absolute((fnr - fpr)))]
 print('Threshold at the intersection of FRR and FAR:', eer_threshold)
 print(f'Equal Error Rate (EER) on valid fold {args.fold}:', eer)
-
-
 
 
 

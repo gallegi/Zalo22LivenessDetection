@@ -1,59 +1,38 @@
 import numpy as np
-import torch
 from torch import nn
-from torch.nn import functional as F
-from torch.optim import AdamW
-from torch.optim.lr_scheduler import CosineAnnealingLR
-
 from sklearn.metrics import accuracy_score
 
 import timm
-import pytorch_lightning as pl
+import numpy as np
+from torch import nn
+from sklearn.metrics import roc_auc_score, accuracy_score
 
-class LivenessLit(pl.LightningModule):
-    def __init__(self, cfg):
-        super().__init__()
-        self.cfg = cfg
-        self.backbone = timm.create_model(self.cfg.backbone, pretrained=True)
-        # self.backbone.load_state_dict(torch.load(backbone_pretrained))
+from .base_model import BaseModel
+
+class LivenessModel(BaseModel):
+    def __init__(self, backbone_name, backbone_pretrained, n_classes=1, device='cpu'):
+        super(BaseModel, self).__init__()
+        self.backbone = timm.create_model(backbone_name, pretrained=backbone_pretrained)
         
-        if 'nfnet' in self.cfg.backbone:
+        if 'nfnet' in backbone_name:
             clf_in_feature = self.backbone.head.fc.in_features
-            self.backbone.head.fc = nn.Linear(clf_in_feature, 1)
-        elif 'swin' in self.cfg.backbone:
-            clf_in_feature = self.backbone.head.in_features
-            self.backbone.head = nn.Linear(clf_in_feature, 1)
-        elif 'resnet' in self.cfg.backbone:
+            self.backbone.head.fc = nn.Linear(clf_in_feature, n_classes)
+        elif 'resnet' in backbone_name:
             clf_in_feature = self.backbone.fc.in_features
-            self.backbone.fc = nn.Linear(clf_in_feature, 1)
+            self.backbone.fc = nn.Linear(clf_in_feature, n_classes)
         else:
             clf_in_feature = self.backbone.classifier.in_features
-            self.backbone.classifier = nn.Linear(clf_in_feature, 1)
+            self.backbone.classifier = nn.Linear(clf_in_feature, n_classes)
+        
+        self.device = device
 
+        # Loss
         self.criterion = nn.BCEWithLogitsLoss()
-        
+
     def forward(self, X):
-        return  self.backbone(X)
-
-    def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=1e-3)
-        
-        optimizer = AdamW(self.backbone.parameters(), lr=self.cfg.init_lr, eps=self.cfg.eps, betas=self.cfg.betas)
-        num_train_steps = int(self.cfg.num_train_examples / self.cfg.batch_size * self.cfg.epochs)
-
-        #Defining LR SCheduler
-        lr_scheduler = CosineAnnealingLR(optimizer, T_max=num_train_steps, eta_min=self.cfg.min_lr)
-
-        return {
-            "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": lr_scheduler,
-                # "monitor": "metric_to_track",
-                # "frequency": "indicates how often the metric is updated"
-                # If "monitor" references validation metrics, then "frequency" should be set to a
-                # multiple of "trainer.check_val_every_n_epoch".
-            },
-        }
+        batch_size = X.shape[0]
+        y = self.backbone(X)
+        return y
 
     def step(self, X, y):
         X = X.to(self.device)
@@ -62,38 +41,33 @@ class LivenessLit(pl.LightningModule):
         loss = self.criterion(y_pred, y)
         return loss, y_pred
 
-    def training_step(self, train_batch, batch_idx):
+    def training_step(self, train_batch):
         X, y = train_batch
         loss, y_pred = self.step(X, y)
-        self.log('train_loss', loss)
         return {'loss': loss, 'preds':y_pred, 'labels':y}
 
-    def validation_step(self, val_batch, batch_idx):
+    def validation_step(self, val_batch):
         X, y = val_batch
         loss, y_pred = self.step(X, y)
-        self.log('val_loss', loss)
         y_prob = y_pred.sigmoid()
         return {'loss': loss, 'preds':y_prob, 'labels':y}
-
-    def predict_step(self, test_batch, batch_idx):
-        X = test_batch[0]
-        X = X.to(self.device)
-        y_pred = self(X).view(-1)
-        y_prob = y_pred.sigmoid()
-        return y_prob
 
     def compute_metrics(self, outputs):
         all_preds = np.concatenate([out['preds'].detach().cpu().numpy() for out in outputs])
         all_labels = np.concatenate([out['labels'].detach().cpu().numpy() for out in outputs])
-        all_preds = (all_preds > 0.5).astype(int)
-        acc = float(accuracy_score(y_true=all_labels, y_pred=all_preds))
-        return acc
+        all_probs = (all_preds > 0.5).astype(int)
+        acc = float(accuracy_score(y_true=all_labels, y_pred=all_probs))
+        auc = float(roc_auc_score(y_true=all_labels, y_score=all_preds))
+        return acc, auc
 
     def training_epoch_end(self, training_step_outputs):
-        train_acc = self.compute_metrics(training_step_outputs)
-        self.log('train_acc', train_acc)
+        train_acc, train_auc = self.compute_metrics(training_step_outputs)
+        return {'acc': train_acc, 'AUC': train_auc}
         
     def validation_epoch_end(self, validation_step_outputs):
-        val_acc = self.compute_metrics(validation_step_outputs)
-        self.log('val_acc', val_acc)
-        
+        val_acc, val_auc = self.compute_metrics(validation_step_outputs)
+        return {'acc': val_acc, 'AUC': val_auc}
+
+
+def count_trainable_params(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
