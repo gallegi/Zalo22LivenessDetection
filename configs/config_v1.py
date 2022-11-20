@@ -29,7 +29,7 @@ class CFG:
     weight_decay=0.01
     warmup_factor = 10
     fp16 = True
-    save_best_only=False
+    save_best_only=True
     checkpoint_monitor = 'validate_loss'
 
     clip_grad_norm = 10
