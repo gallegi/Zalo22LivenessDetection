@@ -3,17 +3,16 @@ import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
 class CFG:
-    version_note = 'v1.1_zoomin'
+    version_note = 'v1_one_frame'
 
     root_folder = './'
     run_folds = [0] #[0,1,2,3,4]
     device = 'cuda:0'
     comet_api_key = 'zR96oNVqYeTUXArmgZBc7J9Jp' # change to your key
     comet_project_name = 'Zalo22Liveness2'
-    frame_sampling_rate = 20
     im_size = 224
 
-    num_workers=2
+    num_workers=0
     backbone="tf_efficientnet_b0_ns"
     gradient_checkpointing=False
     scheduler='cosine' # ['linear', 'cosine']
@@ -26,7 +25,7 @@ class CFG:
     min_lr=1e-6
     eps=1e-6
     betas=(0.9, 0.999)
-    batch_size=256
+    batch_size=16
     weight_decay=0.01
     warmup_factor = 10
     fp16 = True
@@ -40,7 +39,7 @@ class CFG:
     sample = None
     patience = 10
 
-CFG.metadata_file = f'{CFG.root_folder}/data/label_sr{CFG.frame_sampling_rate}_frame_10folds.csv'
+CFG.metadata_file = f'{CFG.root_folder}/data/identified_metadata.csv'
 CFG.train_video_dir = f'{CFG.root_folder}/data/train/videos'
 CFG.test_video_dir = f'{CFG.root_folder}/data/public/videos'
 CFG.model_dir = f'{CFG.root_folder}/models'

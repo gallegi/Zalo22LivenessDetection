@@ -32,6 +32,7 @@ if not torch.cuda.is_available():
     CFG.device = 'cpu'
 
 df = pd.read_csv(CFG.metadata_file)
+df = df[df.set == 'train'].reset_index(drop=True)
 
 os.makedirs(CFG.output_dir, exist_ok=True)
 

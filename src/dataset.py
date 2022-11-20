@@ -21,7 +21,8 @@ class LivenessDataset(Dataset):
         vid_name = row['fname']
         vid_path = os.path.join(self.video_dir, vid_name)
         cap = cv2.VideoCapture(vid_path)
-        frame_no = row['frame_index']
+        length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        frame_no = np.random.choice(range(length))
         cap.set(1, frame_no)  # Where frame_no is the frame you want
         ret, im = cap.read()
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
