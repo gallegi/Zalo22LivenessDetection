@@ -3,17 +3,17 @@ import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
 class CFG:
-    version_note = 'v1.1_swin_b'
+    version_note = 'v1.2'
 
     root_folder = './'
     run_folds = [0] #[0,1,2,3,4]
     device = 'cuda:0'
     comet_api_key = 'zR96oNVqYeTUXArmgZBc7J9Jp' # change to your key
     comet_project_name = 'Zalo22Liveness2'
-    im_size = 256
+    im_size = 224
 
     num_workers=2
-    backbone="swinv2_base_window16_256"
+    backbone="efficientnetv2_l"
     gradient_checkpointing=False
     scheduler='cosine' # ['linear', 'cosine']
     batch_scheduler=True
@@ -25,7 +25,7 @@ class CFG:
     min_lr=1e-6
     eps=1e-6
     betas=(0.9, 0.999)
-    batch_size=32 
+    batch_size=64 
     weight_decay=0.01
     warmup_factor = 10
     fp16 = True
