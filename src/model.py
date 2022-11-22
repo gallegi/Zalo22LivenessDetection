@@ -28,9 +28,9 @@ class LivenessModel(BaseModel):
         #     clf_in_feature = self.backbone.classifier.in_features
         #     self.backbone.classifier = nn.Linear(clf_in_feature, n_classes)
         
-        self.backbone = models.efficientnet_v2_l(pretrained=True)
-        clf_in_feature = self.backbone.classifier[1].in_features
-        self.backbone.classifier[1] = nn.Linear(clf_in_feature, 1)
+        self.backbone = models.convnext_large(pretrained=backbone_pretrained)
+        clf_in_feature = self.backbone.classifier[-1].in_features
+        self.backbone.classifier[-1] = nn.Linear(clf_in_feature, n_classes)
 
         self.device = device
 
