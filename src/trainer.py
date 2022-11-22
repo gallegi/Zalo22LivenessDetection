@@ -87,12 +87,12 @@ class Trainer():
     def fit(self):
         print('Start training ...')
         for current_epoch in range(self.start_ep, self.num_epochs+1):
+            print(f'===== Epoch {current_epoch} ======')
             with self.logger.train():
                 train_monitor = self._train_one_epoch(self.train_loader, current_epoch)
             with self.logger.validate():
                 val_monitor = self._val_one_epoch(self.val_loader, current_epoch)
-
-            print(f'===== Epoch {current_epoch} ======')
+            
             print('----- Train metrics -----')
             print(train_monitor)
             print('----- Validation metrics -----')
