@@ -3,7 +3,7 @@ import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
 class CFG:
-    version_note = 'v1.2'
+    version_note = 'v1.2.1_simple_augs'
 
     root_folder = './'
     run_folds = [0] #[0,1,2,3,4]
@@ -51,17 +51,17 @@ CFG.train_transforms = A.Compose(
         [   
             A.Downscale(scale_min=0.25, scale_max=0.5, p=0.5),
             A.Affine(scale=(1.5, 2.0), keep_ratio=True, p=0.5),
-            A.ShiftScaleRotate(p=0.5, border_mode=cv2.BORDER_CONSTANT),
+            # A.ShiftScaleRotate(p=0.5, border_mode=cv2.BORDER_CONSTANT),
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.5),
-            A.Transpose(p=0.5),
+            # A.Transpose(p=0.5),
 
             A.Resize(height=CFG.im_size, width=CFG.im_size, always_apply=True),
-            A.OneOf(
-                [A.CoarseDropout(max_height=16, max_width=16, max_holes=8, p=1), # several small holes
-                A.CoarseDropout(max_height=64, max_width=64, max_holes=1, p=1),], # 1 big hole
-                p=0.3
-            ),
+            # A.OneOf(
+            #     [A.CoarseDropout(max_height=16, max_width=16, max_holes=8, p=1), # several small holes
+            #     A.CoarseDropout(max_height=64, max_width=64, max_holes=1, p=1),], # 1 big hole
+            #     p=0.3
+            # ),
             A.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
             ToTensorV2(always_apply=True),
         ],
