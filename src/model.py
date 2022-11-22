@@ -1,5 +1,6 @@
 import numpy as np
 from torch import nn
+from torchvision import models
 from sklearn.metrics import accuracy_score
 
 import timm
@@ -12,21 +13,25 @@ from .base_model import BaseModel
 class LivenessModel(BaseModel):
     def __init__(self, backbone_name, backbone_pretrained, n_classes=1, device='cpu'):
         super(BaseModel, self).__init__()
-        self.backbone = timm.create_model(backbone_name, pretrained=backbone_pretrained)
+        # self.backbone = timm.create_model(backbone_name, pretrained=backbone_pretrained)
         
-        if 'swin' in backbone_name:
-            clf_in_feature = self.backbone.head.in_features
-            self.backbone.head = nn.Linear(clf_in_feature, n_classes)
-        elif 'nfnet' in backbone_name:
-            clf_in_feature = self.backbone.head.fc.in_features
-            self.backbone.head.fc = nn.Linear(clf_in_feature, n_classes)
-        elif 'resnet' in backbone_name:
-            clf_in_feature = self.backbone.fc.in_features
-            self.backbone.fc = nn.Linear(clf_in_feature, n_classes)
-        else:
-            clf_in_feature = self.backbone.classifier.in_features
-            self.backbone.classifier = nn.Linear(clf_in_feature, n_classes)
+        # if 'swin' in backbone_name:
+        #     clf_in_feature = self.backbone.head.in_features
+        #     self.backbone.head = nn.Linear(clf_in_feature, n_classes)
+        # elif 'nfnet' in backbone_name:
+        #     clf_in_feature = self.backbone.head.fc.in_features
+        #     self.backbone.head.fc = nn.Linear(clf_in_feature, n_classes)
+        # elif 'resnet' in backbone_name:
+        #     clf_in_feature = self.backbone.fc.in_features
+        #     self.backbone.fc = nn.Linear(clf_in_feature, n_classes)
+        # else:
+        #     clf_in_feature = self.backbone.classifier.in_features
+        #     self.backbone.classifier = nn.Linear(clf_in_feature, n_classes)
         
+        self.backbone = models.efficientnet_v2_l(pretrained=True)
+        clf_in_feature = self.backbone.classifier[1].in_features
+        self.backbone.classifier[1] = nn.Linear(clf_in_feature, 1)
+
         self.device = device
 
         # Loss
