@@ -21,11 +21,11 @@ class CFG:
     resume = False
     resume_key = None
     epochs=30
-    init_lr=5e-4
+    init_lr=1e-4
     min_lr=1e-6
     eps=1e-6
     betas=(0.9, 0.999)
-    batch_size=48 
+    batch_size=32 
     weight_decay=0.01
     warmup_factor = 10
     fp16 = True
