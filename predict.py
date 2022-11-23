@@ -8,7 +8,7 @@ import numpy as np
 from tqdm.auto import tqdm
 
 from src.model import LivenessModel
-from src.dataset import LivenessDataset
+from src.dataset import LivenessTestDataset
 
 parser = argparse.ArgumentParser(description='Training arguments')
 parser.add_argument('--config', type=str, default='config_v1',
@@ -49,35 +49,34 @@ fnames = os.listdir(CFG.test_video_dir)
 test_df = pd.DataFrame(fnames)
 test_df.columns = ['fname']
 
-# vid_names = []
-# frame_indices = []
-# for i, row in test_df.iterrows():
-#     # np.random.seed(CFG.seed)
-#     vid_path = os.path.join(CFG.test_video_dir, row['fname'])
-#     cap = cv2.VideoCapture(vid_path)
-
-#     frame_counts = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-#     indices = np.arange(0, frame_counts, CFG.frame_sampling_rate)
-#     for ind in indices:
-#         vid_names.append(row['fname'])
-#         frame_indices.append(ind)
-
-# ind_df = pd.DataFrame({'fname': vid_names, 'frame_index': frame_indices})
-# test_df = ind_df.merge(test_df, on=['fname'])
-
-test_ds = LivenessDataset(CFG, test_df, CFG.test_video_dir, CFG.val_transforms)
-
-batch_size = CFG.batch_size
-test_loader = torch.utils.data.DataLoader(test_ds,batch_size=batch_size,num_workers=CFG.num_workers,
-                                            shuffle=False,pin_memory=True,drop_last=False)
-
 # Predict
 test_preds = []
-for X,y in tqdm(test_loader, total=len(test_loader)):
+for i, row in tqdm(test_df.iterrows(), total=len(test_df)):
+    vid_path = os.path.join(CFG.test_video_dir, row['fname'])
+    cap = cv2.VideoCapture(vid_path)
+    length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    stride = length // CFG.frames_per_vid
+
+    frame_idx = 0
+    frames = []
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if ret:
+            if frame_idx % stride == 0 and len(frames) < CFG.frames_per_vid:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frame = CFG.val_transforms(image=frame)['image']
+                frames.append(frame)
+            frame_idx += 1
+        else:
+            break
+
+    cap.release()
+
+    X = torch.stack(frames)
     with torch.no_grad():
         y_prob = model(X).sigmoid().view(-1).cpu().numpy()
+        y_prob = y_prob.mean() # avg over multi frames
         test_preds.append(y_prob)
-test_preds = np.concatenate(test_preds)
 
 test_df['prob'] = test_preds
 

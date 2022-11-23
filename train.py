@@ -65,7 +65,7 @@ for valid_fold in CFG.run_folds:
     model.to(CFG.device)
     
     # Optimizer and scheduler
-    optim = AdamW(model.parameters(), lr=CFG.init_lr/CFG.warmup_factor)
+    optim = AdamW(model.parameters(), betas=CFG.betas, lr=CFG.init_lr/CFG.warmup_factor, weight_decay=CFG.weight_decay)
 
     num_training_steps = CFG.epochs * len(train_loader)
     scheduler_cosine = torch.optim.lr_scheduler.CosineAnnealingLR(optim, CFG.epochs-1)

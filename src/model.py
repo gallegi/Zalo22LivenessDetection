@@ -5,6 +5,7 @@ from sklearn.metrics import accuracy_score
 
 import timm
 import numpy as np
+import torch
 from torch import nn
 from sklearn.metrics import roc_auc_score, accuracy_score
 
@@ -75,6 +76,30 @@ class LivenessModel(BaseModel):
     def validation_epoch_end(self, validation_step_outputs):
         val_acc, val_auc = self.compute_metrics(validation_step_outputs)
         return {'acc': val_acc, 'AUC': val_auc}
+
+class LivenessSequenceModel(nn.Module):
+    def __init__(self, pretrained_name = 'resnet50'):
+        super(LivenessSequenceModel, self).__init__()
+        self.backbone = timm.create_model(pretrained_name, pretrained=None)
+        if pretrained_name == 'resnet50':
+            self.in_feats = self.backbone.fc.in_features
+            self.backbone.fc = torch.nn.Identity()
+        if pretrained_name == 'darknet53':
+            self.in_feats = self.backbone.head.fc.in_features
+            self.backbone.head.fc = torch.nn.Identity()
+    
+        self.lstm = torch.nn.LSTM(self.in_feats, self.in_feats, 2,
+                                  bidirectional = True, dropout = 0.3, batch_first = True)
+        self.linear = torch.nn.Linear(self.in_feats * 2, 1)
+    def forward(self, x):
+        b, f, c, h, w = x.shape
+        x = torch.reshape(x, (b * f, c, h, w))
+        x = self.backbone(x)
+        x = torch.reshape(x, (b, f, self.in_feats))
+        output, (h, c) = self.lstm(x)
+        x = output[:,-1,:]
+        x = self.linear(x)
+        return x
 
 
 def count_trainable_params(model):

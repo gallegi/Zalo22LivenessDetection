@@ -2,15 +2,14 @@ import os
 import argparse
 import importlib
 import torch
+import cv2
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from tqdm.auto import tqdm
 import numpy as np
-from sklearn.metrics import roc_curve
 
 from src.model import  LivenessModel
-from src.dataset import LivenessDataset
+from src.metric import compute_eer
 
 parser = argparse.ArgumentParser(description='Training arguments')
 parser.add_argument('--config', type=str, default='config_v1',
@@ -44,25 +43,32 @@ if CFG.sample is not None:
 
 train_df = df[df.fold != args.fold]
 val_df = df[df.fold == args.fold]
-# val_df = val_df[val_df.fname.isin(np.random.choice(val_df.fname.unique(), 10))]
-
-
-val_ds = LivenessDataset(CFG, val_df, CFG.train_video_dir, CFG.val_transforms)
-
-
-batch_size = CFG.batch_size
-valid_loader = torch.utils.data.DataLoader(val_ds,batch_size=batch_size,num_workers=CFG.num_workers,
-                                            shuffle=False,pin_memory=True,drop_last=False)
 
 # Predict
 val_preds = []
-for X,y in tqdm(valid_loader, total=len(valid_loader)):
+for i, row in tqdm(val_df.iterrows(), total=len(val_df)):
+    vid_path = os.path.join(CFG.train_video_dir, row['fname'])
+    cap = cv2.VideoCapture(vid_path)
+    length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    stride = length // CFG.frames_per_vid
+
+    frame_idx = 0
+    frames = []
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if ret:
+            if frame_idx % stride == 0 and len(frames) < CFG.frames_per_vid:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frame = CFG.val_transforms(image=frame)['image']
+                frames.append(frame)
+            frame_idx += 1
+        else:
+            break
+    X = torch.stack(frames)
     with torch.no_grad():
         y_prob = model(X).sigmoid().view(-1).cpu().numpy()
+        y_prob = y_prob.mean() # avg over multi frames
         val_preds.append(y_prob)
-val_preds = np.concatenate(val_preds)
-
-# print(val_preds.shape)
 
 val_df.loc[:, 'prob'] = val_preds
 
@@ -74,19 +80,7 @@ y_pred = val_df_grouped['prob']
 os.makedirs(CFG.valid_pred_folder, exist_ok=True)
 val_df_grouped.to_csv(os.path.join(CFG.valid_pred_folder, CFG.output_dir_name +  f'_valid_fold{args.fold}' + '.csv'), index=False)
 
-# Compute EER
-fpr, tpr, threshold = roc_curve(y, y_pred, pos_label=1)
-fnr = 1 - tpr
-eer_threshold = threshold[np.nanargmin(np.absolute((fnr - fpr)))]
-
-_filter = threshold <= 1
-plt.plot(threshold[_filter], fnr[_filter], label='FRR')
-plt.plot(threshold[_filter], fpr[_filter], label='FAR')
-plt.legend()
-plt.show()
-
-
-eer = fpr[np.nanargmin(np.absolute((fnr - fpr)))]
+eer_threshold, eer = compute_eer(y, y_pred)
 print('Threshold at the intersection of FRR and FAR:', eer_threshold)
 print(f'Equal Error Rate (EER) on valid fold {args.fold}:', eer)
 

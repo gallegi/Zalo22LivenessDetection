@@ -32,3 +32,30 @@ class LivenessDataset(Dataset):
         else:
             label = -1
         return im_ts, label
+
+
+class LivenessTestDataset(Dataset):
+    def __init__(self, cfg, df, video_dir, transforms):
+        self.cfg = cfg
+        self.df = df.reset_index(drop=True)
+        self.video_dir = video_dir
+        self.transforms = transforms
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, item):
+        row = self.df.iloc[item]
+        vid_name = row['fname']
+        vid_path = os.path.join(self.video_dir, vid_name)
+        cap = cv2.VideoCapture(vid_path)
+        frame_no = row['frame_index']
+        cap.set(1, frame_no)  # Where frame_no is the frame you want
+        ret, im = cap.read()
+        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+        im_ts = self.transforms(image=im)['image'].float()
+        if 'liveness_score' in self.df.columns:
+            label = torch.tensor(row['liveness_score']).float()
+        else:
+            label = -1
+        return im_ts, label
