@@ -34,6 +34,9 @@ class CFG:
     save_best_only=True
     checkpoint_monitor = 'validate_loss'
 
+    ema = True
+    ema_decay = 0.99
+
     clip_grad_norm = 10
     accumulation_steps = 1
 

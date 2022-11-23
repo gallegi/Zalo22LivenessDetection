@@ -67,11 +67,13 @@ class Trainer():
         self.accumulation_steps = self.cfg.accumulation_steps
         self.clip_grad_norm = self.cfg.clip_grad_norm
         self.fp16 = self.cfg.fp16
+        self.ema = self.cfg.ema
 
         if self.fp16:
             self.scaler = torch.cuda.amp.GradScaler()
 
-        self.model_ema = ModelEmaV2(self.model, decay=0.99, device=self.device)
+        if self.ema:
+            self.model_ema = ModelEmaV2(self.model, decay=self.cfg.ema_decay, device=self.device)
 
         self.batch_index = 0
         self.current_train_step = 0
@@ -107,7 +109,8 @@ class Trainer():
             for k, v in val_monitor.items():
                 if 'validate_'+k == self.checkpoint_monitor:
                     tracked_metric = v
-            self.checkpointer.update(self.model_ema.module, self.optimizer, self.lr_scheduler, tracked_metric)
+            self.checkpointer.update(self.model_ema.module if self.ema else self.model, 
+                                    self.optimizer, self.lr_scheduler, tracked_metric)
             
             if self.lr_scheduler:
                 self.lr_scheduler.step()
@@ -138,7 +141,8 @@ class Trainer():
                 self.scaler.update()
             else:
                 self.optimizer.step()
-            self.model_ema.update(self.model)
+            if self.ema:
+                self.model_ema.update(self.model)
             if self.batch_index > 0:
                 self.optimizer.zero_grad()
 
