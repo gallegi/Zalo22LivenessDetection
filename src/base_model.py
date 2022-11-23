@@ -22,11 +22,12 @@ class ModelEmaV2(nn.Module):
     def __init__(self, model, decay=0.9999, device=None):
         super(ModelEmaV2, self).__init__()
         # make a copy of the model for accumulating moving average of weights
+        model.cpu()
         self.module = deepcopy(model)
         self.module.eval()
         self.decay = decay
         self.device = device  # perform ema on different device from model if set
-        self.module.cpu()
+        model.to(device)
 
     def _update(self, model, update_fn):
         with torch.no_grad():
