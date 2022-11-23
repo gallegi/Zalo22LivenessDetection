@@ -27,7 +27,7 @@ class CFG:
     min_lr=1e-6
     eps=1e-6
     betas=(0.9, 0.999)
-    batch_size=12
+    batch_size=10
     weight_decay=0.01
     warmup_factor = 10
     fp16 = True
