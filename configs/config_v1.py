@@ -12,7 +12,9 @@ class CFG:
     comet_project_name = 'Zalo22Liveness2'
     im_size = 512
 
-    num_workers=2
+    frames_per_vid = 3 # number of frames per video to run prediction
+
+    num_workers=4
     backbone="convnext_large"
     gradient_checkpointing=False
     scheduler='cosine' # ['linear', 'cosine']
@@ -25,7 +27,7 @@ class CFG:
     min_lr=1e-6
     eps=1e-6
     betas=(0.9, 0.999)
-    batch_size=8
+    batch_size=16
     weight_decay=0.01
     warmup_factor = 10
     fp16 = True
@@ -36,7 +38,7 @@ class CFG:
     accumulation_steps = 1
 
     seed=67    
-    sample = None
+    sample = 16
     patience = 10
 
 CFG.metadata_file = f'{CFG.root_folder}/data/identified_metadata.csv'

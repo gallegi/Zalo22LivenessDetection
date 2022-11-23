@@ -71,7 +71,7 @@ class Trainer():
         if self.fp16:
             self.scaler = torch.cuda.amp.GradScaler()
 
-        self.model_ema = ModelEmaV2(self.model, self.device, decay=0.99, device=self.device)
+        self.model_ema = ModelEmaV2(self.model, decay=0.99, device=self.device)
 
         self.batch_index = 0
         self.current_train_step = 0
