@@ -19,6 +19,7 @@ class LivenessDataset(Dataset):
     def __getitem__(self, item):
         row = self.df.iloc[item]
         vid_name = row['fname']
+        
         vid_path = os.path.join(self.video_dir, vid_name)
         cap = cv2.VideoCapture(vid_path)
         length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -27,11 +28,18 @@ class LivenessDataset(Dataset):
         ret, im = cap.read()
         im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
         im_ts = self.transforms(image=im)['image'].float()
+
         if 'liveness_score' in self.df.columns:
             label = torch.tensor(row['liveness_score']).float()
         else:
             label = -1
-        return im_ts, label
+
+        if 'individual_id' in self.df.columns:
+            indv_id = torch.tensor(row['individual_id']).long()
+        else:
+            indv_id = -1
+
+        return im_ts, label, indv_id
 
 
 class LivenessTestDataset(Dataset):

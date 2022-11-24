@@ -1,21 +1,24 @@
+import torchvision
 import cv2
 import albumentations as A 
 from albumentations.pytorch.transforms import ToTensorV2
 
 class CFG:
-    version_note = 'v3_ema'
+    version_note = 'v4_metric_learning'
 
     root_folder = './'
     run_folds = [0] #[0,1,2,3,4]
     device = 'cuda:0'
     comet_api_key = 'zR96oNVqYeTUXArmgZBc7J9Jp' # change to your key
     comet_project_name = 'Zalo22Liveness2'
-    im_size = 512
+    im_size = 384
+    embedding_size = 512
 
     frames_per_vid = 3 # number of frames per video to run prediction
 
     num_workers=2
-    backbone="convnext_large"
+    backbone="regnet_y_16gf"
+    pretrained_weights = torchvision.models.RegNet_Y_16GF_Weights.IMAGENET1K_SWAG_E2E_V1
     gradient_checkpointing=False
     scheduler='cosine' # ['linear', 'cosine']
     batch_scheduler=True
@@ -32,7 +35,7 @@ class CFG:
     warmup_factor = 10
     fp16 = True
     save_best_only=True
-    checkpoint_monitor = 'validate_loss'
+    checkpoint_monitor = 'validate_acc'
 
     ema = True
     ema_decay = 0.99
@@ -41,7 +44,7 @@ class CFG:
     accumulation_steps = 1
 
     seed=67    
-    sample = None
+    sample = 20
     patience = 10
 
 CFG.metadata_file = f'{CFG.root_folder}/data/identified_metadata.csv'

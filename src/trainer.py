@@ -109,7 +109,7 @@ class Trainer():
             for k, v in val_monitor.items():
                 if 'validate_'+k == self.checkpoint_monitor:
                     tracked_metric = v
-            self.checkpointer.update(self.model_ema.module if self.ema else self.model, 
+            self.checkpointer.update(self.model_ema.module if self.ema else self.model,
                                     self.optimizer, self.lr_scheduler, tracked_metric)
             
             if self.lr_scheduler:

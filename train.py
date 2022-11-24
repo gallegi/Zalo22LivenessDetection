@@ -34,6 +34,8 @@ if not torch.cuda.is_available():
 df = pd.read_csv(CFG.metadata_file)
 df = df[df.set == 'train'].reset_index(drop=True)
 
+n_individuals = df.individual_id.nunique()
+
 os.makedirs(CFG.output_dir, exist_ok=True)
 
 for valid_fold in CFG.run_folds:
@@ -59,9 +61,9 @@ for valid_fold in CFG.run_folds:
     val_loader = torch.utils.data.DataLoader(val_dataset,batch_size=batch_size,num_workers=CFG.num_workers,
                                                shuffle=False,pin_memory=True,drop_last=False)
 
-    
     # Model
-    model = LivenessModel(CFG.backbone, backbone_pretrained=True, device=CFG.device)
+    model = LivenessModel(CFG.backbone, backbone_pretrained=CFG.pretrained_weights, embedding_size=CFG.embedding_size,
+                          n_individuals=n_individuals, device=CFG.device)
     model.to(CFG.device)
     
     # Optimizer and scheduler
