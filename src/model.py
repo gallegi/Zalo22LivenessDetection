@@ -50,7 +50,7 @@ class LivenessModel(BaseModel):
         super(BaseModel, self).__init__()
         
         self.backbone = getattr(models, backbone_name)(weights=backbone_pretrained)
-        pool_size = self.backbone.classifier[-1].in_features
+        pool_size = self.backbone.fc.in_features
         self.backbone.classifier = nn.Identity()
 
         self.neck = nn.Sequential(
