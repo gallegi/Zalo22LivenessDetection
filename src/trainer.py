@@ -80,7 +80,8 @@ class Trainer():
         self.current_valid_step = 0
         
         self.checkpoint_monitor = self.cfg.checkpoint_monitor
-        self.checkpointer = Checkpointer(self.output_folder, save_best_only=self.cfg.save_best_only, logger=self.logger)
+        self.checkpointer = Checkpointer(self.output_folder, smaller_is_better=False,
+                                         save_best_only=self.cfg.save_best_only, logger=self.logger)
 
         # resume training
         if self.resume:

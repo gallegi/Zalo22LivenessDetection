@@ -70,7 +70,7 @@ class LivenessModel(BaseModel):
 
     def forward(self, X):
         batch_size = X.shape[0]
-        pooled_features = self.backbone(X)[:,:,0,0]
+        pooled_features = self.backbone(X)
         embedding = self.neck(pooled_features)
         metric_learning_logits = self.metric_learning_head(embedding)
         y_pred = self.clf_head(embedding)
