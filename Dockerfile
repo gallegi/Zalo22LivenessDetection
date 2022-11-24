@@ -1,3 +1,9 @@
-FROM nvidia/cuda:11.6.1-cudnn8-devel-ubuntu20.04
+FROM t4e_liveness_base:latest
 
-CMD ["ls"]
+USER root
+
+RUN mkdir /code
+
+COPY start_jupyter.sh /code
+
+CMD ["/bin/bash /code/start_jupyter.sh"]
