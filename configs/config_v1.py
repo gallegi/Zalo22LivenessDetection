@@ -44,7 +44,7 @@ class CFG:
     accumulation_steps = 1
 
     seed=67    
-    sample = 20
+    sample = None
     patience = 10
 
 CFG.metadata_file = f'{CFG.root_folder}/data/identified_metadata.csv'
