@@ -39,8 +39,13 @@ CFG.output_dir = os.path.join(CFG.model_dir, CFG.output_dir_name)
 if not torch.cuda.is_available():
     CFG.device = 'cpu'
 
+# Load data
+df = pd.read_csv(CFG.metadata_file)
+df = df[df.set == 'train']
+n_individuals = df.individual_id.nunique()
+
 # Load image model
-model = LivenessModel(CFG.backbone, backbone_pretrained=False)
+model = LivenessModel(CFG.backbone, CFG.pretrained_weights, CFG.embedding_size, n_individuals=n_individuals)
 model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'])
 model.to(CFG.device)
 model.eval()
@@ -50,9 +55,6 @@ seq_model = LivenessSequenceModel(CFG_SEQ.backbone)
 seq_model.load_state_dict(torch.load(args.weight_seq, map_location='cpu')['state_dict'])
 seq_model.to(CFG.device)
 seq_model.eval()
-
-df = pd.read_csv(CFG.metadata_file)
-df = df[df.set == 'train']
 
 if CFG.sample is not None:
     df = df.sample(CFG.sample).reset_index(drop=True)
@@ -86,7 +88,7 @@ for i, row in tqdm(val_df.iterrows(), total=len(val_df)):
     X = torch.stack(frames)
     with torch.no_grad():
         # model prediction
-        y_prob = model(X).sigmoid().view(-1).cpu().numpy()
+        y_prob = model(X, metric_learning_output=False).sigmoid().view(-1).cpu().numpy()
         y_prob = y_prob.mean() # avg over multi frames
 
         # sequence model prediction

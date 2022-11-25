@@ -38,11 +38,11 @@ print('Predict on:', test_dir_name)
 
 if not torch.cuda.is_available():
     CFG.device = 'cpu'
-    CFG.device = 'cpu'
 
 # Load model
-model = LivenessModel(CFG.backbone, backbone_pretrained=False)
-model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'])
+model = LivenessModel(CFG.backbone, CFG.pretrained_weights, CFG.embedding_size)
+del model.metric_learning_head # not necessary in prediction flow
+print(model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'], strict=False))
 model.to(CFG.device)
 model.eval()
 
@@ -76,15 +76,13 @@ for i, row in tqdm(test_df.iterrows(), total=len(test_df)):
 
     X = torch.stack(frames)
     with torch.no_grad():
-        y_prob = model(X).sigmoid().view(-1).cpu().numpy()
+        y_prob = model(X, metric_learning_output=False).sigmoid().view(-1).cpu().numpy()
         y_prob = y_prob.mean() # avg over multi frames
         test_preds.append(y_prob)
 
 test_df['prob'] = test_preds
 
-test_df_grouped = test_df.groupby('fname').mean().reset_index()
-
-sub = test_df_grouped[['fname', 'prob']]
+sub = test_df[['fname', 'prob']]
 sub.columns = ['fname', 'liveness_score']
 
 os.makedirs(CFG.submission_folder, exist_ok=True)

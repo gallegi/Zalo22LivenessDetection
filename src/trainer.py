@@ -80,7 +80,8 @@ class Trainer():
         self.current_valid_step = 0
         
         self.checkpoint_monitor = self.cfg.checkpoint_monitor
-        self.checkpointer = Checkpointer(self.output_folder, save_best_only=self.cfg.save_best_only, logger=self.logger)
+        self.checkpointer = Checkpointer(self.output_folder, smaller_is_better=False,
+                                         save_best_only=self.cfg.save_best_only, logger=self.logger)
 
         # resume training
         if self.resume:
@@ -109,7 +110,7 @@ class Trainer():
             for k, v in val_monitor.items():
                 if 'validate_'+k == self.checkpoint_monitor:
                     tracked_metric = v
-            self.checkpointer.update(self.model_ema.module if self.ema else self.model, 
+            self.checkpointer.update(self.model_ema.module if self.ema else self.model,
                                     self.optimizer, self.lr_scheduler, tracked_metric)
             
             if self.lr_scheduler:
