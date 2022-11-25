@@ -1,0 +1,10 @@
+numpy
+pandas
+albumentations==1.3.0
+warmup_scheduler
+comet-ml
+sklearn
+matplotlib
+tqdm
+timm==0.6.11
+jupyterlab

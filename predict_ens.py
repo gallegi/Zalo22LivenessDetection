@@ -46,7 +46,8 @@ if not torch.cuda.is_available():
     CFG.device = 'cpu'
 
 # Load model
-model = LivenessModel(CFG.backbone, CFG.pretrained_weights, CFG.embedding_size)
+model = LivenessModel(CFG.backbone, embedding_size=CFG.embedding_size)
+del model.metric_learning_head # not necessary in prediction flow
 model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'], strict=False)
 model.to(CFG.device)
 model.eval()
@@ -62,6 +63,7 @@ seq_model.eval()
 fnames = os.listdir(CFG.test_video_dir)
 test_df = pd.DataFrame(fnames)
 test_df.columns = ['fname']
+test_df = test_df.sort_values('fname')
 
 # Predict
 test_preds = []

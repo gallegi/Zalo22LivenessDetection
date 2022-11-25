@@ -45,7 +45,7 @@ class ArcMarginProduct(nn.Module):
         return cosine
 
 class LivenessModel(BaseModel):
-    def __init__(self, backbone_name, backbone_pretrained, embedding_size=512,
+    def __init__(self, backbone_name, backbone_pretrained=None, embedding_size=512,
                  n_classes=1, n_individuals=1, device='cpu'):
         super(BaseModel, self).__init__()
         
@@ -122,9 +122,9 @@ class LivenessModel(BaseModel):
         return {'acc': val_acc, 'AUC': val_auc}
 
 class LivenessSequenceModel(nn.Module):
-    def __init__(self, pretrained_name = 'resnet50'):
+    def __init__(self, pretrained_name = 'resnet50', pretrained=False):
         super(LivenessSequenceModel, self).__init__()
-        self.backbone = timm.create_model(pretrained_name, pretrained=None)
+        self.backbone = timm.create_model(pretrained_name, pretrained=pretrained)
         if pretrained_name == 'resnet50':
             self.in_feats = self.backbone.fc.in_features
             self.backbone.fc = torch.nn.Identity()

@@ -82,9 +82,7 @@ for i, row in tqdm(test_df.iterrows(), total=len(test_df)):
 
 test_df['prob'] = test_preds
 
-test_df_grouped = test_df.groupby('fname').mean().reset_index()
-
-sub = test_df_grouped[['fname', 'prob']]
+sub = test_df[['fname', 'prob']]
 sub.columns = ['fname', 'liveness_score']
 
 os.makedirs(CFG.submission_folder, exist_ok=True)
