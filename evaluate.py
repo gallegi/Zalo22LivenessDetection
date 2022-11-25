@@ -30,14 +30,17 @@ CFG.output_dir = os.path.join(CFG.model_dir, CFG.output_dir_name)
 if not torch.cuda.is_available():
     CFG.device = 'cpu'
 
-# Load model and data
-model = LivenessModel(CFG.backbone, backbone_pretrained=False)
-model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'])
-model.to(CFG.device)
-model.eval()
-
+# Load metadata
 df = pd.read_csv(CFG.metadata_file)
 df = df[df.set == 'train']
+
+n_individuals = df.individual_id.nunique()
+
+# Load model
+model = LivenessModel(CFG.backbone, CFG.pretrained_weights, CFG.embedding_size, n_individuals=n_individuals)
+print(model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'], strict=False))
+model.to(CFG.device)
+model.eval()
 
 if CFG.sample is not None:
     df = df.sample(CFG.sample).reset_index(drop=True)
@@ -67,7 +70,7 @@ for i, row in tqdm(val_df.iterrows(), total=len(val_df)):
             break
     X = torch.stack(frames)
     with torch.no_grad():
-        y_prob = model(X).sigmoid().view(-1).cpu().numpy()
+        y_prob = model(X, metric_learning_output=False).sigmoid().view(-1).cpu().numpy()
         y_prob = y_prob.mean() # avg over multi frames
         val_preds.append(y_prob)
 

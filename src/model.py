@@ -68,13 +68,17 @@ class LivenessModel(BaseModel):
         self.criterion = nn.BCEWithLogitsLoss()
         self.metric_learning_criterion = ArcFaceLoss()
 
-    def forward(self, X):
+    def forward(self, X, metric_learning_output=True):
         batch_size = X.shape[0]
         pooled_features = self.backbone(X)
         embedding = self.neck(pooled_features)
-        metric_learning_logits = self.metric_learning_head(embedding)
         y_pred = self.clf_head(embedding)
-        return y_pred, metric_learning_logits
+
+        if metric_learning_output:
+            metric_learning_logits = self.metric_learning_head(embedding)
+            return y_pred, metric_learning_logits
+
+        return y_pred
 
     def step(self, X, y, indv_ids):
         X = X.to(self.device)

@@ -14,7 +14,7 @@ class CFG:
     im_size = 384
     embedding_size = 512
 
-    frames_per_vid = 3 # number of frames per video to run prediction
+    frames_per_vid = 5 # number of frames per video to run prediction
 
     num_workers=2
     backbone="regnet_y_16gf"
