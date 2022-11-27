@@ -13,6 +13,7 @@ class CFG:
     comet_project_name = 'Zalo22Liveness2'
     im_size = 384
     embedding_size = 512
+    decoder_in_features = 1232
 
     frames_per_vid = 5 # number of frames per video to run prediction
 
@@ -49,6 +50,7 @@ class CFG:
 
 CFG.metadata_file = f'{CFG.root_folder}/data/identified_metadata.csv'
 CFG.train_video_dir = f'{CFG.root_folder}/data/train/videos'
+CFG.train_mask_dir = f'{CFG.root_folder}/data/masks/'
 CFG.test_video_dir = f'{CFG.root_folder}/data/public/videos'
 CFG.model_dir = f'{CFG.root_folder}/models'
 CFG.valid_pred_folder = f'{CFG.root_folder}/valid_predictions'
