@@ -4,7 +4,7 @@ import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
 class CFG:
-    version_note = 'v4_metric_learning'
+    version_note = 'v5_seg_head'
 
     root_folder = './'
     run_folds = [0] #[0,1,2,3,4]
@@ -13,6 +13,8 @@ class CFG:
     comet_project_name = 'Zalo22Liveness2'
     im_size = 384
     embedding_size = 512
+    decoder_in_features = 1232
+    mask_size = 192
 
     frames_per_vid = 5 # number of frames per video to run prediction
 
@@ -30,7 +32,7 @@ class CFG:
     min_lr=1e-6
     eps=1e-6
     betas=(0.9, 0.999)
-    batch_size=32
+    batch_size=2
     weight_decay=0.01
     warmup_factor = 10
     fp16 = True
@@ -49,6 +51,7 @@ class CFG:
 
 CFG.metadata_file = f'{CFG.root_folder}/data/identified_metadata.csv'
 CFG.train_video_dir = f'{CFG.root_folder}/data/train/videos'
+CFG.train_mask_dir = f'{CFG.root_folder}/data/masks/'
 CFG.test_video_dir = f'{CFG.root_folder}/data/public/videos'
 CFG.model_dir = f'{CFG.root_folder}/models'
 CFG.valid_pred_folder = f'{CFG.root_folder}/valid_predictions'
@@ -69,7 +72,7 @@ CFG.train_transforms = A.Compose(
                     A.RandomCrop(width=504, height=896, p=1.0),
                 ],
                 p=1.0),
-                A.Affine(scale=(1.5, 2.0), keep_ratio=True, p=1.0),
+                A.Affine(scale=(1.25, 1.5), keep_ratio=True, p=1.0),
             ],
             p=0.5
             ),

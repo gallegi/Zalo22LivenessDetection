@@ -16,7 +16,7 @@ parser.add_argument('--config', type=str, default='config',
                     help='config file to run an experiment')
 parser.add_argument('--fold', type=int, default=0,
                     help='fold to evaluate')
-parser.add_argument('--weight', type=str, default='models/v1_baseline_tf_efficientnet_b0/fold0/epoch=3-val_loss=0.155-val_acc=0.950.ckpt',
+parser.add_argument('--weight', type=str, default='models/v5_seg_head_regnet_y_16gf/fold0/best.pth',
                     help='trained weight file')
 
 args = parser.parse_args()
@@ -37,7 +37,9 @@ df = df[df.set == 'train']
 n_individuals = df.individual_id.nunique()
 
 # Load model
-model = LivenessModel(CFG.backbone, CFG.pretrained_weights, CFG.embedding_size, n_individuals=n_individuals)
+model = LivenessModel(CFG.backbone, CFG.pretrained_weights, CFG.embedding_size)
+print('Delete auxilary heads for faster inference')
+del model.metric_learning_head, model.decoder, model.seg_head
 print(model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'], strict=False))
 model.to(CFG.device)
 model.eval()
@@ -70,7 +72,7 @@ for i, row in tqdm(val_df.iterrows(), total=len(val_df)):
             break
     X = torch.stack(frames)
     with torch.no_grad():
-        y_prob = model(X, metric_learning_output=False).sigmoid().view(-1).cpu().numpy()
+        y_prob = model(X, aux_heads=False).sigmoid().view(-1).cpu().numpy()
         y_prob = y_prob.mean() # avg over multi frames
         val_preds.append(y_prob)
 

@@ -18,7 +18,7 @@ parser.add_argument('--config_seq', type=str, default='config_seq',
                     help='config file for sequence model')
 parser.add_argument('--fold', type=int, default=0,
                     help='fold to evaluate')
-parser.add_argument('--weight', type=str, default='models/v1_baseline_tf_efficientnet_b0/fold0/epoch=3-val_loss=0.155-val_acc=0.950.ckpt',
+parser.add_argument('--weight', type=str, default='models/v5_seg_head_regnet_y_16gf/fold0/best.pth',
                     help='trained weight file')
 parser.add_argument('--weight_seq', type=str, default='models/cspdarknet_lstm/fold0/best.pt',
                     help='sequence model trained weight file')
@@ -45,8 +45,9 @@ df = df[df.set == 'train']
 n_individuals = df.individual_id.nunique()
 
 # Load image model
-model = LivenessModel(CFG.backbone, CFG.pretrained_weights, CFG.embedding_size, n_individuals=n_individuals)
-model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'])
+model = LivenessModel(CFG.backbone, CFG.pretrained_weights, CFG.embedding_size)
+print('Delete auxilary heads for faster inference')
+del model.metric_learning_head, model.decoder, model.seg_head
 model.to(CFG.device)
 model.eval()
 
@@ -88,7 +89,7 @@ for i, row in tqdm(val_df.iterrows(), total=len(val_df)):
     X = torch.stack(frames)
     with torch.no_grad():
         # model prediction
-        y_prob = model(X, metric_learning_output=False).sigmoid().view(-1).cpu().numpy()
+        y_prob = model(X, aux_heads=False).sigmoid().view(-1).cpu().numpy()
         y_prob = y_prob.mean() # avg over multi frames
 
         # sequence model prediction
