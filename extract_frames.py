@@ -6,7 +6,7 @@ from tqdm.auto import tqdm
 import numpy as np
 from sklearn.model_selection import StratifiedKFold
 
-from configs.config_v1 import CFG
+from configs.config import CFG
 
 
 df = pd.read_csv('data/train/label.csv')

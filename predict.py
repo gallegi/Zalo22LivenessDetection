@@ -11,7 +11,7 @@ from src.model import LivenessModel
 from src.dataset import LivenessTestDataset
 
 parser = argparse.ArgumentParser(description='Training arguments')
-parser.add_argument('--config', type=str, default='config_v1',
+parser.add_argument('--config', type=str, default='config',
                     help='config file to run an experiment')
 parser.add_argument('--test_video_dir', type=str, default='data/public/videos',
                     help='path to test folder')

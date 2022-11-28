@@ -12,7 +12,7 @@ from src.model import  LivenessModel
 from src.metric import compute_eer
 
 parser = argparse.ArgumentParser(description='Training arguments')
-parser.add_argument('--config', type=str, default='config_v1',
+parser.add_argument('--config', type=str, default='config',
                     help='config file to run an experiment')
 parser.add_argument('--fold', type=int, default=0,
                     help='fold to evaluate')
