@@ -52,8 +52,8 @@ for valid_fold in CFG.run_folds:
     CFG.num_train_examples = len(train_df)
 
     # Defining DataSet
-    train_dataset = LivenessDataset(CFG, train_df, CFG.train_video_dir, CFG.train_transforms)
-    val_dataset = LivenessDataset(CFG, valid_df, CFG.train_video_dir, CFG.val_transforms)
+    train_dataset = LivenessDataset(CFG, train_df, CFG.train_video_dir, CFG.train_mask_dir, CFG.train_transforms)
+    val_dataset = LivenessDataset(CFG, valid_df, CFG.train_video_dir, CFG.train_mask_dir, CFG.val_transforms)
 
     batch_size = CFG.batch_size
     train_loader = torch.utils.data.DataLoader(train_dataset,batch_size=batch_size, shuffle=True,

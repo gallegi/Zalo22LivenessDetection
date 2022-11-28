@@ -14,6 +14,7 @@ class CFG:
     im_size = 384
     embedding_size = 512
     decoder_in_features = 1232
+    mask_size = 192
 
     frames_per_vid = 5 # number of frames per video to run prediction
 
@@ -71,7 +72,7 @@ CFG.train_transforms = A.Compose(
                     A.RandomCrop(width=504, height=896, p=1.0),
                 ],
                 p=1.0),
-                A.Affine(scale=(1.5, 2.0), keep_ratio=True, p=1.0),
+                A.Affine(scale=(1.25, 1.5), keep_ratio=True, p=1.0),
             ],
             p=0.5
             ),

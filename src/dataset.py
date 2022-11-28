@@ -1,5 +1,6 @@
 import os
 import torch
+import torch.nn.functional as F
 from torch.utils.data import Dataset
 import cv2
 import numpy as np
@@ -31,17 +32,15 @@ class LivenessDataset(Dataset):
 
         mask_path = os.path.join(self.mask_dir, f'{vid_name}_{frame_no}.jpg')
         mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+        mask = cv2.resize(mask, (im.shape[1], im.shape[0]))
         mask = np.where(mask>0, 1, 0)
-
-        print(np.unique(mask))
-
-        print(im.shape, mask.shape)
 
         tr_out = self.transforms(image=im, mask=mask)
         im_ts = tr_out['image'].float()
         mask = tr_out['mask'].float()
 
-       
+        mask = F.interpolate(mask.unsqueeze(0).unsqueeze(0), 
+                size=(self.cfg.mask_size, self.cfg.mask_size), mode='nearest')[0]
 
         if 'liveness_score' in self.df.columns:
             label = torch.tensor(row['liveness_score']).float()

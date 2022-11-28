@@ -115,16 +115,16 @@ class LivenessModel(BaseModel):
         return clf_loss, metric_learning_loss, seg_loss, y_pred
 
     def training_step(self, train_batch):
-        X, y, indv_ids = train_batch
-        clf_loss, metric_learning_loss, seg_loss, y_pred = self.step(X, y, indv_ids)
+        X, y, indv_ids, masks = train_batch
+        clf_loss, metric_learning_loss, seg_loss, y_pred = self.step(X, y, indv_ids, masks)
         loss = clf_loss + metric_learning_loss + seg_loss
         y_prob = y_pred.sigmoid()
         return {'loss': loss, 'clf_loss': clf_loss, 'metric_learning_loss': metric_learning_loss,
                 'seg_loss':seg_loss, 'preds':y_prob, 'labels':y}
 
     def validation_step(self, val_batch):
-        X, y, indv_ids = val_batch
-        clf_loss, metric_learning_loss, seg_loss, y_pred = self.step(X, y, indv_ids)
+        X, y, indv_ids, masks = val_batch
+        clf_loss, metric_learning_loss, seg_loss, y_pred = self.step(X, y, indv_ids, masks)
         loss = clf_loss + metric_learning_loss + seg_loss
         y_prob = y_pred.sigmoid()
         return {'loss': loss, 'clf_loss': clf_loss, 'metric_learning_loss': metric_learning_loss,
