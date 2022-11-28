@@ -18,6 +18,6 @@ COPY predict* /code/
 COPY evaluate* /code/
 COPY predict_notebook.ipynb /code/
 
-COPY models/v4_metric_learning_regnet_y_16gf/fold0/* /code/models/v4_metric_learning_regnet_y_16gf/fold0/
+COPY models/v5_seg_head_regnet_y_16gf/fold0/* /code/models/v5_seg_head_regnet_y_16gf/fold0/
 COPY models/cspdarknet_lstm/fold0/* /code/models/cspdarknet_lstm/fold0/
 

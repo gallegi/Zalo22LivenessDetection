@@ -17,7 +17,7 @@ parser.add_argument('--test_video_dir', type=str, default='data/public/videos',
                     help='path to test folder')
 parser.add_argument('--fold', type=int, default=0,
                     help='the fold of the trained weight')
-parser.add_argument('--weight', type=str, default='models/v1_baseline_tf_efficientnet_b0/fold0/epoch=3-val_loss=0.155-val_acc=0.950.ckpt',
+parser.add_argument('--weight', type=str, default='models/v5_seg_head_regnet_y_16gf/fold0/best.pth',
                     help='trained weight file')
 parser.add_argument('--submission_folder', type=str, default='./submissions',
                     help='trained weight file')
@@ -41,7 +41,8 @@ if not torch.cuda.is_available():
 
 # Load model
 model = LivenessModel(CFG.backbone, CFG.pretrained_weights, CFG.embedding_size)
-del model.metric_learning_head # not necessary in prediction flow
+print('Delete auxilary heads for faster inference')
+del model.metric_learning_head, model.decoder, model.seg_head
 print(model.load_state_dict(torch.load(args.weight, map_location='cpu')['model'], strict=False))
 model.to(CFG.device)
 model.eval()
@@ -76,7 +77,7 @@ for i, row in tqdm(test_df.iterrows(), total=len(test_df)):
 
     X = torch.stack(frames)
     with torch.no_grad():
-        y_prob = model(X, metric_learning_output=False).sigmoid().view(-1).cpu().numpy()
+        y_prob = model(X, aux_heads=False).sigmoid().view(-1).cpu().numpy()
         y_prob = y_prob.mean() # avg over multi frames
         test_preds.append(y_prob)
 
