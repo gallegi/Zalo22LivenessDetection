@@ -2,6 +2,8 @@ FROM namnt42/t4e_liveness_base:latest
 
 USER root
 
+RUN pip install segmentation_models_pytorch
+
 RUN mkdir /code
 RUN mkdir /result
 RUN mkdir /data
