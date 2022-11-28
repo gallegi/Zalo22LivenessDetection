@@ -75,28 +75,29 @@ for i, row in tqdm(test_df.iterrows(), total=len(test_df)):
 
     frame_idx = 0
     frames = []
+    frame_seq_model = []
     while cap.isOpened():
         ret, frame = cap.read()
         if ret:
             if frame_idx % stride == 0 and len(frames) < CFG.frames_per_vid:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                frame = CFG.val_transforms(image=frame)['image']
-                frames.append(frame)
+                frames.append(CFG.val_transforms(image=frame)['image'])
+                frame_seq_model.append(CFG_SEQ.val_transforms(image=frame)['image'])
             frame_idx += 1
         else:
             break
 
     cap.release()
 
-    X = torch.stack(frames)
+    X = torch.stack(frames).to(CFG.device)
+    X_seq = torch.stack(frame_seq_model).unsqueeze(0).to(CFG.device)
     with torch.no_grad():
         # model prediction
         y_prob = model(X, metric_learning_output=False).sigmoid().view(-1).cpu().numpy()
         y_prob = y_prob.mean() # avg over multi frames
 
         # sequence model prediction
-        X = X.unsqueeze(0)
-        y_prob_seq = seq_model(X).sigmoid().view(-1).cpu().item()
+        y_prob_seq = seq_model(X_seq).sigmoid().view(-1).cpu().item()
 
     y_prob_ens = (y_prob + y_prob_seq) / 2
     test_preds.append(y_prob_ens)
