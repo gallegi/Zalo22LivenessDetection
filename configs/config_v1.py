@@ -4,7 +4,7 @@ import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
 class CFG:
-    version_note = 'v4_metric_learning'
+    version_note = 'v5_seg_head'
 
     root_folder = './'
     run_folds = [0] #[0,1,2,3,4]
