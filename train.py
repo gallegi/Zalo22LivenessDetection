@@ -13,7 +13,7 @@ from src.model import LivenessModel
 from src.trainer import Trainer
 
 parser = argparse.ArgumentParser(description='Training arguments')
-parser.add_argument('--config', type=str, default='config_v1',
+parser.add_argument('--config', type=str, default='config',
                     help='config file to run an experiment')
 parser.add_argument('--model_dir', type=str, default='./models',
                     help='config file to run an experiment')

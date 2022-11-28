@@ -1,4 +1,4 @@
-FROM t4e_liveness_base:latest
+FROM namnt42/t4e_liveness_base:latest
 
 USER root
 

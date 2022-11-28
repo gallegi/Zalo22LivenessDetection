@@ -12,7 +12,7 @@ from src.model import  LivenessModel, LivenessSequenceModel
 from src.metric import compute_eer
 
 parser = argparse.ArgumentParser(description='Training arguments')
-parser.add_argument('--config', type=str, default='config_v1',
+parser.add_argument('--config', type=str, default='config',
                     help='config file to run an experiment')
 parser.add_argument('--config_seq', type=str, default='config_seq',
                     help='config file for sequence model')
@@ -20,7 +20,7 @@ parser.add_argument('--fold', type=int, default=0,
                     help='fold to evaluate')
 parser.add_argument('--weight', type=str, default='models/v1_baseline_tf_efficientnet_b0/fold0/epoch=3-val_loss=0.155-val_acc=0.950.ckpt',
                     help='trained weight file')
-parser.add_argument('--weight_seq', type=str, default='models/v1_baseline_tf_efficientnet_b0/fold0/epoch=3-val_loss=0.155-val_acc=0.950.ckpt',
+parser.add_argument('--weight_seq', type=str, default='models/cspdarknet_lstm/fold0/best.pt',
                     help='sequence model trained weight file')
 parser.add_argument('--output_name', type=str, default='ensemble',
                     help='name for submission file')
