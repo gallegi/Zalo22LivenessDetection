@@ -4,7 +4,7 @@ from albumentations.pytorch.transforms import ToTensorV2
 
 class CFG:
     version_note = 'lstm'
-    im_size = 384
+    im_size = 480
 
     backbone="darknet53"
 

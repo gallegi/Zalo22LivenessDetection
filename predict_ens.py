@@ -10,7 +10,7 @@ from tqdm.auto import tqdm
 from src.model import LivenessModel, LivenessSequenceModel
 
 parser = argparse.ArgumentParser(description='Training arguments')
-parser.add_argument('--config', type=str, default='config_v1',
+parser.add_argument('--config', type=str, default='config',
                     help='config file to run an experiment')
 parser.add_argument('--config_seq', type=str, default='config_seq',
                     help='config file for sequence model')
@@ -20,7 +20,7 @@ parser.add_argument('--submission_folder', type=str, default='./submissions',
                     help='trained weight file')
 parser.add_argument('--weight', type=str, default='models/v1_baseline_tf_efficientnet_b0/fold0/epoch=3-val_loss=0.155-val_acc=0.950.ckpt',
                     help='trained weight file')
-parser.add_argument('--weight_seq', type=str, default='models/v1_baseline_tf_efficientnet_b0/fold0/epoch=3-val_loss=0.155-val_acc=0.950.ckpt',
+parser.add_argument('--weight_seq', type=str, default='models/cspdarknet_lstm/fold0/best.pt',
                     help='sequence model trained weight file')
 parser.add_argument('--output_name', type=str, default='ensemble',
                     help='name for submission file')
@@ -75,37 +75,36 @@ for i, row in tqdm(test_df.iterrows(), total=len(test_df)):
 
     frame_idx = 0
     frames = []
+    frame_seq_model = []
     while cap.isOpened():
         ret, frame = cap.read()
         if ret:
             if frame_idx % stride == 0 and len(frames) < CFG.frames_per_vid:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                frame = CFG.val_transforms(image=frame)['image']
-                frames.append(frame)
+                frames.append(CFG.val_transforms(image=frame)['image'])
+                frame_seq_model.append(CFG_SEQ.val_transforms(image=frame)['image'])
             frame_idx += 1
         else:
             break
 
     cap.release()
 
-    X = torch.stack(frames)
+    X = torch.stack(frames).to(CFG.device)
+    X_seq = torch.stack(frame_seq_model).unsqueeze(0).to(CFG.device)
     with torch.no_grad():
         # model prediction
         y_prob = model(X, metric_learning_output=False).sigmoid().view(-1).cpu().numpy()
         y_prob = y_prob.mean() # avg over multi frames
 
         # sequence model prediction
-        X = X.unsqueeze(0)
-        y_prob_seq = seq_model(X).sigmoid().view(-1).cpu().item()
+        y_prob_seq = seq_model(X_seq).sigmoid().view(-1).cpu().item()
 
     y_prob_ens = (y_prob + y_prob_seq) / 2
     test_preds.append(y_prob_ens)
 
 test_df['prob'] = test_preds
 
-test_df_grouped = test_df.groupby('fname').mean().reset_index()
-
-sub = test_df_grouped[['fname', 'prob']]
+sub = test_df[['fname', 'prob']]
 sub.columns = ['fname', 'liveness_score']
 
 os.makedirs(CFG.submission_folder, exist_ok=True)
