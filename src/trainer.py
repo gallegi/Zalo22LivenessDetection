@@ -8,6 +8,7 @@ import comet_ml
 
 # from .logger import Logger
 from .checkpointer import Checkpointer
+from .base_model import ModelEmaV2
 from .general import seed_everything, AverageMeter
 
 def str_to_class(class_name):
@@ -66,16 +67,21 @@ class Trainer():
         self.accumulation_steps = self.cfg.accumulation_steps
         self.clip_grad_norm = self.cfg.clip_grad_norm
         self.fp16 = self.cfg.fp16
+        self.ema = self.cfg.ema
 
         if self.fp16:
             self.scaler = torch.cuda.amp.GradScaler()
+
+        if self.ema:
+            self.model_ema = ModelEmaV2(self.model, decay=self.cfg.ema_decay, device=self.device)
 
         self.batch_index = 0
         self.current_train_step = 0
         self.current_valid_step = 0
         
         self.checkpoint_monitor = self.cfg.checkpoint_monitor
-        self.checkpointer = Checkpointer(self.output_folder, save_best_only=self.cfg.save_best_only, logger=self.logger)
+        self.checkpointer = Checkpointer(self.output_folder, smaller_is_better=False,
+                                         save_best_only=self.cfg.save_best_only, logger=self.logger)
 
         # resume training
         if self.resume:
@@ -87,12 +93,12 @@ class Trainer():
     def fit(self):
         print('Start training ...')
         for current_epoch in range(self.start_ep, self.num_epochs+1):
+            print(f'===== Epoch {current_epoch} ======')
             with self.logger.train():
                 train_monitor = self._train_one_epoch(self.train_loader, current_epoch)
             with self.logger.validate():
                 val_monitor = self._val_one_epoch(self.val_loader, current_epoch)
-
-            print(f'===== Epoch {current_epoch} ======')
+            
             print('----- Train metrics -----')
             print(train_monitor)
             print('----- Validation metrics -----')
@@ -104,7 +110,8 @@ class Trainer():
             for k, v in val_monitor.items():
                 if 'validate_'+k == self.checkpoint_monitor:
                     tracked_metric = v
-            self.checkpointer.update(self.model, self.optimizer, self.lr_scheduler, tracked_metric)
+            self.checkpointer.update(self.model_ema.module if self.ema else self.model,
+                                    self.optimizer, self.lr_scheduler, tracked_metric)
             
             if self.lr_scheduler:
                 self.lr_scheduler.step()
@@ -135,6 +142,8 @@ class Trainer():
                 self.scaler.update()
             else:
                 self.optimizer.step()
+            if self.ema:
+                self.model_ema.update(self.model)
             if self.batch_index > 0:
                 self.optimizer.zero_grad()
 

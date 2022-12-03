@@ -13,7 +13,7 @@ from src.model import LivenessModel
 from src.trainer import Trainer
 
 parser = argparse.ArgumentParser(description='Training arguments')
-parser.add_argument('--config', type=str, default='config_v1',
+parser.add_argument('--config', type=str, default='config',
                     help='config file to run an experiment')
 parser.add_argument('--model_dir', type=str, default='./models',
                     help='config file to run an experiment')
@@ -32,6 +32,9 @@ if not torch.cuda.is_available():
     CFG.device = 'cpu'
 
 df = pd.read_csv(CFG.metadata_file)
+df = df[df.set == 'train'].reset_index(drop=True)
+
+n_individuals = df.individual_id.nunique()
 
 os.makedirs(CFG.output_dir, exist_ok=True)
 
@@ -49,8 +52,8 @@ for valid_fold in CFG.run_folds:
     CFG.num_train_examples = len(train_df)
 
     # Defining DataSet
-    train_dataset = LivenessDataset(CFG, train_df, CFG.train_video_dir, CFG.train_transforms)
-    val_dataset = LivenessDataset(CFG, valid_df, CFG.train_video_dir, CFG.val_transforms)
+    train_dataset = LivenessDataset(CFG, train_df, CFG.train_video_dir, CFG.train_mask_dir, CFG.train_transforms)
+    val_dataset = LivenessDataset(CFG, valid_df, CFG.train_video_dir, CFG.train_mask_dir, CFG.val_transforms)
 
     batch_size = CFG.batch_size
     train_loader = torch.utils.data.DataLoader(train_dataset,batch_size=batch_size, shuffle=True,
@@ -58,13 +61,13 @@ for valid_fold in CFG.run_folds:
     val_loader = torch.utils.data.DataLoader(val_dataset,batch_size=batch_size,num_workers=CFG.num_workers,
                                                shuffle=False,pin_memory=True,drop_last=False)
 
-    
     # Model
-    model = LivenessModel(CFG.backbone, backbone_pretrained=True, device=CFG.device)
+    model = LivenessModel(CFG.backbone, backbone_pretrained=CFG.pretrained_weights, embedding_size=CFG.embedding_size,
+                          n_individuals=n_individuals, device=CFG.device)
     model.to(CFG.device)
     
     # Optimizer and scheduler
-    optim = AdamW(model.parameters(), lr=CFG.init_lr/CFG.warmup_factor)
+    optim = AdamW(model.parameters(), betas=CFG.betas, lr=CFG.init_lr/CFG.warmup_factor, weight_decay=CFG.weight_decay)
 
     num_training_steps = CFG.epochs * len(train_loader)
     scheduler_cosine = torch.optim.lr_scheduler.CosineAnnealingLR(optim, CFG.epochs-1)
